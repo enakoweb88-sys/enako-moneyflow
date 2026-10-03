@@ -1,0 +1,10 @@
+spring:
+  config:
+    activate:
+      on-profile: dev
+  datasource:
+    url: jdbc:postgresql://${DEV_DB_HOST:dev-db.internal}:${DEV_DB_PORT:5432}/${DEV_DB_NAME:moneyflow_dev}
+    username: ${DEV_DB_USERNAME:moneyflow_dev_user}
+    password: ${DEV_DB_PASSWORD:dev_secret_placeholder}
+  jpa:
+    show-sql: false

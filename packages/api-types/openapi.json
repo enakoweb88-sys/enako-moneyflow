@@ -1,0 +1,293 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "E-NAKO MoneyFlow Core API",
+    "version": "1.0.0",
+    "description": "Enterprise cross-border treasury, wholesale FX conversion, and instant XAF disbursement contract."
+  },
+  "servers": [
+    {
+      "url": "https://api.moneyflow.enako.cm/api/v1",
+      "description": "Production Server"
+    },
+    {
+      "url": "http://localhost:8080/api/v1",
+      "description": "Local Development Server"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Authenticate customer or admin user",
+        "operationId": "loginUser",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication response or MFA challenge required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customer/wallet": {
+      "get": {
+        "summary": "Retrieve customer multi-currency wallet ledger balance",
+        "operationId": "getWalletBalance",
+        "responses": {
+          "200": {
+            "description": "Current wallet balances",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletBalanceResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customer/remittances": {
+      "post": {
+        "summary": "Create an inward remittance order to buy XAF",
+        "operationId": "createRemittance",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRemittanceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Remittance order initiated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemittanceOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customer/withdrawals": {
+      "post": {
+        "summary": "Submit a mobile money withdrawal order",
+        "operationId": "submitWithdrawal",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWithdrawalRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Withdrawal processing initiated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WithdrawalOrder"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/approvals": {
+      "get": {
+        "summary": "List pending dual-control approval requests",
+        "operationId": "listPendingApprovals",
+        "responses": {
+          "200": {
+            "description": "List of approvals requiring checker action",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ApprovalRequest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" },
+          "mfaCode": { "type": "string" }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "required": ["token", "userId", "role", "kycStatus"],
+        "properties": {
+          "token": { "type": "string" },
+          "userId": { "type": "string" },
+          "role": {
+            "type": "string",
+            "enum": [
+              "CUSTOMER",
+              "OPERATOR",
+              "COMPLIANCE_OFFICER",
+              "FINANCE_CONTROLLER",
+              "TREASURY_ANALYST",
+              "SUPER_ADMIN"
+            ]
+          },
+          "kycStatus": {
+            "type": "string",
+            "enum": ["Not started", "Pending", "Verified", "More info needed"]
+          },
+          "mfaRequired": { "type": "boolean" }
+        }
+      },
+      "WalletBalanceResponse": {
+        "type": "object",
+        "required": ["currency", "balance", "available", "held"],
+        "properties": {
+          "currency": { "type": "string", "default": "XAF" },
+          "balance": { "type": "number" },
+          "available": { "type": "number" },
+          "held": { "type": "number" }
+        }
+      },
+      "CreateRemittanceRequest": {
+        "type": "object",
+        "required": ["sourceCurrency", "sourceAmount"],
+        "properties": {
+          "sourceCurrency": {
+            "type": "string",
+            "enum": ["EUR", "USD", "GBP", "CAD"]
+          },
+          "sourceAmount": { "type": "number" }
+        }
+      },
+      "RemittanceOrder": {
+        "type": "object",
+        "required": [
+          "id",
+          "reference",
+          "sourceAmount",
+          "sourceCurrency",
+          "netXaf",
+          "rate",
+          "status",
+          "expiresAt"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "reference": { "type": "string" },
+          "sourceAmount": { "type": "number" },
+          "sourceCurrency": { "type": "string" },
+          "netXaf": { "type": "number" },
+          "rate": { "type": "number" },
+          "status": {
+            "type": "string",
+            "enum": ["Pending", "Processing", "Completed", "Failed"]
+          },
+          "expiresAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateWithdrawalRequest": {
+        "type": "object",
+        "required": ["beneficiaryId", "amount"],
+        "properties": {
+          "beneficiaryId": { "type": "string" },
+          "amount": { "type": "number" },
+          "mfaCode": { "type": "string" }
+        }
+      },
+      "WithdrawalOrder": {
+        "type": "object",
+        "required": [
+          "id",
+          "reference",
+          "beneficiaryName",
+          "amount",
+          "fee",
+          "totalDebit",
+          "status"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "reference": { "type": "string" },
+          "beneficiaryName": { "type": "string" },
+          "amount": { "type": "number" },
+          "fee": { "type": "number" },
+          "totalDebit": { "type": "number" },
+          "status": {
+            "type": "string",
+            "enum": ["Processing", "Completed", "Failed"]
+          }
+        }
+      },
+      "ApprovalRequest": {
+        "type": "object",
+        "required": [
+          "id",
+          "reference",
+          "type",
+          "maker",
+          "amount",
+          "reason",
+          "status"
+        ],
+        "properties": {
+          "id": { "type": "string" },
+          "reference": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": [
+              "MANUAL_CREDIT",
+              "FX_OVERRIDE",
+              "FEE_EXCEPTION",
+              "TIER_UPGRADE",
+              "RECONCILIATION_WRITE_OFF"
+            ]
+          },
+          "maker": { "type": "string" },
+          "amount": { "type": "string" },
+          "reason": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "APPROVED", "REJECTED"]
+          }
+        }
+      }
+    }
+  }
+}

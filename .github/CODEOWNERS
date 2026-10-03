@@ -1,0 +1,22 @@
+# E-NAKO MoneyFlow Code Ownership & Review Mandate
+# Global default reviewers
+* @enako-moneyflow-core
+
+# ========================================================
+# CRITICAL FINANCIAL MODULES (Requires dual approval)
+# ========================================================
+apps/backend/src/main/java/**/ledger/** @enako-finance-leads @enako-security-leads
+apps/backend/src/main/java/**/wallet/** @enako-finance-leads @enako-security-leads
+apps/backend/src/main/java/**/approval/** @enako-compliance-leads @enako-security-leads
+apps/backend/src/main/java/**/payment/** @enako-payments-leads @enako-security-leads
+
+# Database migrations (immutable double-entry ledgers)
+apps/backend/src/main/resources/db/migration/** @enako-db-leads @enako-finance-leads
+
+# ========================================================
+# INFRASTRUCTURE AS CODE & CLOUD SECURITY
+# ========================================================
+infra/** @enako-devops-leads @enako-security-leads
+.github/workflows/** @enako-devops-leads @enako-security-leads
+.github/CODEOWNERS @enako-security-leads
+.gitleaks.toml @enako-security-leads

@@ -1,0 +1,41 @@
+{
+  "app": {
+    "title": "E-NAKO MoneyFlow",
+    "subtitle": "Fintech Platform Foundation",
+    "status": "System Status: Active",
+    "environment": "Environment: Staging"
+  },
+  "shell": {
+    "welcomeUser": "Welcome",
+    "systemRole": "Role",
+    "navigation": "Navigation",
+    "quickActions": "Quick Actions",
+    "language": "Language",
+    "roleSwitcher": "Active Role"
+  },
+  "sections": {
+    "overview": "OVERVIEW",
+    "customers": "CUSTOMERS",
+    "transactions": "TRANSACTIONS",
+    "finance": "FINANCE",
+    "insights": "INSIGHTS",
+    "system": "SYSTEM"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "customers": "Customers",
+    "kycReview": "KYC Review",
+    "remittances": "Remittances",
+    "manualCredit": "Manual Credit",
+    "withdrawals": "Withdrawals",
+    "approvals": "Approvals",
+    "walletsLedger": "Wallets & Ledger",
+    "fxRates": "FX Rates",
+    "fees": "Fees",
+    "reconciliation": "Reconciliation",
+    "reports": "Reports",
+    "auditLogs": "Audit Logs",
+    "administration": "Administration",
+    "settings": "Settings"
+  }
+}

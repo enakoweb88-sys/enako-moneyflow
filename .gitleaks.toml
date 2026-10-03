@@ -1,0 +1,45 @@
+title = "E-NAKO MoneyFlow Strict Gitleaks Secret Detection Policy"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "enako-generic-api-key"
+description = "Generic High-Entropy API Key or Secret Token"
+regex = '''(?i)(?:api_key|apikey|secret|token|password|auth_token|client_secret)\s*[:=]\s*['"][0-9a-zA-Z\-_]{16,}['"]'''
+secretGroup = 0
+entropy = 3.5
+
+[[rules]]
+id = "enako-private-key"
+description = "RSA/EC/OpenSSH Private Keys"
+regex = '''-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----'''
+keywords = ["PRIVATE KEY"]
+
+[[rules]]
+id = "enako-jwt-secret"
+description = "Hardcoded JWT Secret or Signing Key"
+regex = '''(?i)(?:jwt_secret|jwt_key|signing_key)\s*[:=]\s*['"][^\s'"]{8,}['"]'''
+keywords = ["jwt_secret", "jwt_key"]
+
+[[rules]]
+id = "enako-db-connection-string"
+description = "Database URI with embedded password credentials"
+regex = '''(?i)(?:postgres|postgresql|mysql):\/\/[a-zA-Z0-9_\-\.]+:[^@\s]+@[a-zA-Z0-9_\-\.]+'''
+keywords = ["postgres://", "postgresql://", "mysql://"]
+
+[[rules]]
+id = "enako-aws-access-key"
+description = "AWS Access Key ID"
+regex = '''(A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}'''
+keywords = ["AKIA", "ASIA"]
+
+[allowlist]
+description = "Allowlisted test files and mock data"
+paths = [
+  '''apps/admin-web/src/mock/.*''',
+  '''apps/customer-web/src/mock/.*''',
+  '''\.env\.example''',
+  '''package-lock\.json''',
+  '''pnpm-lock\.yaml'''
+]
