@@ -50,24 +50,25 @@ jobs:
             ghcr.io/${{ github.repository }}/backend:${{ steps.meta.outputs.tag }}
             ghcr.io/${{ github.repository }}/backend:staging-latest
 
-      - uses: pnpm/action-setup@v3
+      - name: Build & Push Admin Container Image
+        uses: docker/build-push-action@v5
         with:
-          version: 12.8.1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - name: Build Frontend Bundles
-        run: pnpm run build
+          context: .
+          file: infra/docker/admin-web.Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/admin-web:${{ steps.meta.outputs.tag }}
+            ghcr.io/${{ github.repository }}/admin-web:staging-latest
 
-      - name: Archive Frontend Artifacts
-        uses: actions/upload-artifact@v4
+      - name: Build & Push Customer Container Image
+        uses: docker/build-push-action@v5
         with:
-          name: staging-frontends-${{ steps.meta.outputs.tag }}
-          path: |
-            apps/admin-web/dist
-            apps/customer-web/.next
+          context: .
+          file: infra/docker/customer-web.Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/customer-web:${{ steps.meta.outputs.tag }}
+            ghcr.io/${{ github.repository }}/customer-web:staging-latest
 
   # ========================================================
   # CONTROLLED DATABASE MIGRATIONS (Flyway)
