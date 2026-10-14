@@ -78,7 +78,7 @@ export const RemittancesPage: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-10 px-3 bg-white border border-slate-300 rounded-md text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="h-10 px-3 bg-white border border-slate-300 rounded-md text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#001f5b]"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="Awaiting payment">Awaiting payment</option>
@@ -99,7 +99,7 @@ export const RemittancesPage: React.FC = () => {
                 type="date"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className="h-10 px-3 bg-white border border-slate-300 rounded-md text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="h-10 px-3 bg-white border border-slate-300 rounded-md text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#001f5b]"
               />
 
               {(searchTerm || statusFilter !== 'ALL' || dateFilter) && (
@@ -162,7 +162,7 @@ export const RemittancesPage: React.FC = () => {
                     <td className="py-3.5 px-6 text-right font-bold text-slate-900">
                       {rem.sourceAmount.toLocaleString()} {rem.sourceCurrency}
                     </td>
-                    <td className="py-3.5 px-6 text-right font-bold text-emerald-800">
+                    <td className="py-3.5 px-6 text-right font-bold text-[#001f5b]">
                       {rem.netXafAmount.toLocaleString()} XAF
                     </td>
                     <td className="py-3.5 px-6 font-sans">
@@ -249,7 +249,7 @@ export const RemittancesPage: React.FC = () => {
                   Treasury Bank Statement Match
                 </span>
                 {selectedRemittance.bankStatementMatched ? (
-                  <div className="p-3 bg-emerald-50 rounded border border-emerald-200 text-emerald-900">
+                  <div className="p-3 bg-[#00c2c7]/10 rounded border border-[#00c2c7]/30 text-[#001f5b]">
                     <div className="font-semibold">Statement Match Confirmed</div>
                     <div className="font-mono text-xs mt-1">
                       Ref: {selectedRemittance.bankStatementRef || 'BNP-CLEARED-8821'}
@@ -294,7 +294,7 @@ export const RemittancesPage: React.FC = () => {
                 <span className="font-bold text-slate-900 text-sm">
                   Net Beneficiary Payout (XAF):
                 </span>
-                <span className="font-mono font-extrabold text-emerald-800 text-base">
+                <span className="font-mono font-extrabold text-[#001f5b] text-base">
                   {selectedRemittance.netXafAmount.toLocaleString()} XAF
                 </span>
               </div>
@@ -309,7 +309,7 @@ export const RemittancesPage: React.FC = () => {
                   </span>
                 )}
                 {selectedRemittance.status === 'Completed' && (
-                  <span className="text-xs text-emerald-800 font-semibold bg-emerald-50 px-3 py-1.5 rounded border border-emerald-200">
+                  <span className="text-xs text-[#001f5b] font-semibold bg-[#00c2c7]/10 px-3 py-1.5 rounded border border-[#00c2c7]/30">
                     Order fulfilled and disbursed to recipient mobile wallet.
                   </span>
                 )}

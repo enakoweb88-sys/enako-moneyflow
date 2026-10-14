@@ -156,7 +156,7 @@ export const ManualCreditPage: React.FC = () => {
             <select
               value={selectedCustomerId}
               onChange={(e) => setSelectedCustomerId(e.target.value)}
-              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
             >
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -180,7 +180,7 @@ export const ManualCreditPage: React.FC = () => {
                   else if (e.target.value === 'USD') setExchangeRate('602.15')
                   else setExchangeRate('1.0')
                 }}
-                className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+                className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
               >
                 <option value="XAF">XAF (Central African Franc)</option>
                 <option value="EUR">EUR (Euro)</option>
@@ -246,7 +246,7 @@ export const ManualCreditPage: React.FC = () => {
               placeholder="State clearing bank account, bank reference number, and confirmation method..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600 text-slate-900"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#001f5b] text-slate-900"
             />
           </div>
 
@@ -300,7 +300,7 @@ export const ManualCreditPage: React.FC = () => {
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500 font-medium">Evidence File:</span>
-                <span className="font-mono text-emerald-800 font-semibold">
+                <span className="font-mono text-[#001f5b] font-semibold">
                   {selectedCredit.evidenceFileName}
                 </span>
               </div>

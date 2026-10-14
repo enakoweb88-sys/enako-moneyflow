@@ -15,7 +15,8 @@ interface ConfirmDialogProps {
   onCancel: () => void;
 }
 
-const ConfirmDialogContent: React.FC<Omit<ConfirmDialogProps, "isOpen">> = ({
+export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+  isOpen,
   title,
   description,
   confirmLabel = "Confirm",
@@ -23,12 +24,14 @@ const ConfirmDialogContent: React.FC<Omit<ConfirmDialogProps, "isOpen">> = ({
   variant = "primary",
   requireReason = false,
   reasonLabel = "Reason for this action (required):",
-  reasonPlaceholder = "Please enter a clear explanation...",
+  reasonPlaceholder = "Please enter a clear explanation for audit tracking...",
   onConfirm,
   onCancel,
 }) => {
   const [reason, setReason] = React.useState("");
   const [error, setError] = React.useState("");
+
+  if (!isOpen) return null;
 
   const handleConfirm = () => {
     if (requireReason && !reason.trim()) {
@@ -69,7 +72,7 @@ const ConfirmDialogContent: React.FC<Omit<ConfirmDialogProps, "isOpen">> = ({
                 }}
                 rows={3}
                 placeholder={reasonPlaceholder}
-                className="w-full text-sm px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-slate-900 placeholder:text-slate-400"
+                className="w-full text-sm px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#001f5b] focus:border-[#001f5b] text-slate-900 placeholder:text-slate-400"
               />
               {error && (
                 <p className="text-xs text-rose-600 mt-1 font-medium">
@@ -80,7 +83,15 @@ const ConfirmDialogContent: React.FC<Omit<ConfirmDialogProps, "isOpen">> = ({
           )}
 
           <div className="mt-6 flex items-center justify-end space-x-3">
-            <Button variant="outline" size="sm" onClick={onCancel}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setReason("");
+                setError("");
+                onCancel();
+              }}
+            >
               {cancelLabel}
             </Button>
             <Button variant={buttonVariant} size="sm" onClick={handleConfirm}>
@@ -91,9 +102,4 @@ const ConfirmDialogContent: React.FC<Omit<ConfirmDialogProps, "isOpen">> = ({
       </div>
     </div>
   );
-};
-
-export const ConfirmDialog: React.FC<ConfirmDialogProps> = (props) => {
-  if (!props.isOpen) return null;
-  return <ConfirmDialogContent {...props} />;
 };

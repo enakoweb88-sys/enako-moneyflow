@@ -15,7 +15,19 @@ import { Input } from "@/components/ui/input";
 import { Tabs } from "@/components/ui/tabs";
 import { Modal } from "@/components/ui/modal";
 import { useCustomer } from "@/mock/CustomerContext";
+import { formatMoney } from "@/lib/format";
 import { toast } from "sonner";
+import {
+  ArrowUpRight,
+  Send,
+  CheckCircle2,
+  ShieldCheck,
+  Smartphone,
+  Users,
+  Zap,
+  Wallet,
+  ArrowRight,
+} from "lucide-react";
 
 export const SendWithdrawPage: React.FC = () => {
   const { wallet, beneficiaries, withdrawXaf, setActiveNav } = useCustomer();
@@ -118,73 +130,81 @@ export const SendWithdrawPage: React.FC = () => {
     <div className="space-y-6 max-w-3xl mx-auto">
       <PageHeader
         title="Send & Withdraw"
-        subtitle="Disburse funds to registered mobile money wallets or send peer-to-peer between E-NAKO wallets"
+        subtitle="Disburse funds to registered mobile money wallets or send peer-to-peer between E-NAKO corporate accounts"
       />
 
+      {/* Tabs */}
       <Tabs
         tabs={[
           { id: "withdraw", label: "Withdraw to Mobile Money" },
-          { id: "send", label: "Send to Another E-NAKO Wallet" },
+          { id: "send", label: "Peer-to-Peer E-NAKO Transfer" },
         ]}
         activeTab={activeTab}
         onChange={(id) => setActiveTab(id as typeof activeTab)}
       />
 
-      {/* Post-Submission In-Place Status Screen */}
+      {/* Post-Submission Status Screen */}
       {submittedTx ? (
-        <Card className="border-emerald-200 bg-white shadow-md">
-          <CardHeader className="bg-emerald-50/60 border-b border-emerald-100 py-6 text-center">
-            <div className="flex items-center justify-center space-x-2 mb-2">
+        <Card className="border-slate-200 bg-white shadow-md rounded-2xl overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
+          <CardHeader className="bg-slate-50/80 border-b border-slate-100 py-8 text-center">
+            <div className="w-12 h-12 rounded-full bg-[#00c2c7]/15 text-[#001f5b] flex items-center justify-center mx-auto mb-3">
+              {submittedTx.status === "Completed" ? (
+                <CheckCircle2 className="w-6 h-6 text-[#001f5b]" />
+              ) : (
+                <Zap className="w-6 h-6 text-[#001f5b] animate-pulse" />
+              )}
+            </div>
+            <div className="flex items-center justify-center mb-2">
               <Badge
                 variant={
-                  submittedTx.status === "Completed"
-                    ? "success"
-                    : submittedTx.status === "Processing"
-                      ? "warning"
-                      : "danger"
+                  submittedTx.status === "Completed" ? "success" : "warning"
                 }
+                className="font-mono text-xs uppercase"
               >
-                Status: {submittedTx.status}
+                {submittedTx.status === "Completed"
+                  ? "Settlement Confirmed"
+                  : "Routing to Aggregator"}
               </Badge>
             </div>
             <CardTitle className="text-2xl font-extrabold text-slate-900">
               {submittedTx.status === "Processing"
-                ? "Disbursement in Progress..."
-                : "Disbursement Completed Successfully"}
+                ? "Disbursement in Processing..."
+                : "Payout Completed Successfully"}
             </CardTitle>
             <CardDescription className="text-xs text-slate-600 mt-1 max-w-md mx-auto">
               {submittedTx.status === "Processing"
-                ? "Your payout was sent to the aggregator gateway switch. Monitoring live response..."
-                : "Funds have been delivered to recipient mobile wallet."}
+                ? "Your payout request is being executed via the CEMAC mobile money switch. Verification in progress..."
+                : "Funds have been delivered and acknowledged by the recipient mobile network operator."}
             </CardDescription>
           </CardHeader>
 
           <CardContent className="p-8 space-y-6">
-            <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 max-w-md mx-auto space-y-3 text-xs font-mono">
-              <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500 font-sans">
-                  Withdrawal Reference:
-                </span>
+            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 max-w-md mx-auto space-y-2.5 text-xs font-mono">
+              <div className="flex justify-between py-1.5 border-b border-slate-200">
+                <span className="text-slate-500 font-sans">Withdrawal Ref</span>
                 <span className="font-bold text-slate-900">
                   {submittedTx.id}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500 font-sans">Beneficiary:</span>
+              <div className="flex justify-between py-1.5 border-b border-slate-200">
+                <span className="text-slate-500 font-sans">Beneficiary</span>
                 <span className="font-semibold text-slate-900 font-sans">
                   {submittedTx.beneficiaryName}
                 </span>
               </div>
-              <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500 font-sans">Payout Amount:</span>
+              <div className="flex justify-between py-1.5 border-b border-slate-200">
+                <span className="text-slate-500 font-sans">Payout Amount</span>
                 <span className="font-bold text-slate-900">
-                  {submittedTx.amount.toLocaleString()} XAF
+                  {formatMoney(submittedTx.amount, "XAF")}
                 </span>
               </div>
-              <div className="flex justify-between py-1">
-                <span className="text-slate-500 font-sans">Total Debited:</span>
-                <span className="font-extrabold text-slate-950 text-sm">
-                  {submittedTx.total.toLocaleString()} XAF
+              <div className="flex justify-between py-1.5">
+                <span className="text-slate-500 font-sans font-bold">
+                  Total Debited
+                </span>
+                <span className="font-extrabold text-[#001f5b] text-sm">
+                  {formatMoney(submittedTx.total, "XAF")}
                 </span>
               </div>
             </div>
@@ -194,6 +214,7 @@ export const SendWithdrawPage: React.FC = () => {
                 variant="outline"
                 size="default"
                 onClick={() => setSubmittedTx(null)}
+                className="rounded-xl"
               >
                 New Withdrawal
               </Button>
@@ -201,6 +222,7 @@ export const SendWithdrawPage: React.FC = () => {
                 variant="default"
                 size="default"
                 onClick={() => setActiveNav("dashboard")}
+                className="bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs"
               >
                 Back to Dashboard
               </Button>
@@ -209,13 +231,15 @@ export const SendWithdrawPage: React.FC = () => {
         </Card>
       ) : activeTab === "withdraw" ? (
         /* WITHDRAW TAB FORM */
-        <Card>
-          <CardHeader className="border-b border-slate-100 pb-4">
-            <CardTitle className="text-base">
+        <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
+          <CardHeader className="border-b border-slate-100 pb-4 bg-slate-50/50">
+            <CardTitle className="text-base font-bold text-slate-900">
               Instant Mobile Money Cashout
             </CardTitle>
-            <CardDescription className="text-xs">
-              Supported networks: MTN Mobile Money and Orange Money Cameroun
+            <CardDescription className="text-xs text-slate-500">
+              Direct API disbursement to MTN Mobile Money and Orange Money
+              Cameroun
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6 space-y-6">
@@ -225,22 +249,22 @@ export const SendWithdrawPage: React.FC = () => {
             >
               {/* Beneficiary Selector */}
               <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block font-semibold text-slate-700 uppercase tracking-wider">
-                    Select Verified Beneficiary
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
+                    Select Verified Recipient
                   </label>
                   <button
                     type="button"
                     onClick={() => setActiveNav("beneficiaries")}
-                    className="text-emerald-700 hover:text-emerald-900 font-semibold cursor-pointer underline text-xs"
+                    className="text-[#001f5b] hover:text-[#00c2c7] font-semibold cursor-pointer underline text-xs transition-colors"
                   >
-                    Add new beneficiary
+                    + Register new beneficiary
                   </button>
                 </div>
                 <select
                   value={selectedBeneficiaryId}
                   onChange={(e) => setSelectedBeneficiaryId(e.target.value)}
-                  className="w-full h-11 px-3 bg-white border border-slate-300 rounded-md text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  className="w-full h-11 px-3.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b]"
                 >
                   {beneficiaries.map((b) => (
                     <option key={b.id} value={b.id}>
@@ -252,12 +276,15 @@ export const SendWithdrawPage: React.FC = () => {
 
               {/* Amount Field */}
               <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block font-semibold text-slate-700 uppercase tracking-wider">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
                     Withdrawal Amount (XAF)
                   </label>
-                  <span className="text-slate-500 font-mono">
-                    Available: {wallet.available.toLocaleString()} XAF
+                  <span className="text-slate-500 font-mono text-xs">
+                    Available:{" "}
+                    <strong className="text-slate-900">
+                      {formatMoney(wallet.available, "XAF")}
+                    </strong>
                   </span>
                 </div>
                 <Input
@@ -265,12 +292,12 @@ export const SendWithdrawPage: React.FC = () => {
                   placeholder="e.g. 250000"
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(e.target.value)}
-                  className="w-full text-base font-bold font-mono"
+                  className="w-full h-11 text-base font-bold font-mono border-slate-300 rounded-xl"
                 />
               </div>
 
               {/* Summary Calculation Panel */}
-              <div className="p-5 bg-slate-50 rounded-xl border border-slate-200 space-y-2 text-xs font-sans">
+              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5 text-xs font-sans">
                 <span className="font-bold text-slate-900 uppercase tracking-wider block border-b border-slate-200 pb-2">
                   Disbursement Fee Breakdown
                 </span>
@@ -279,7 +306,7 @@ export const SendWithdrawPage: React.FC = () => {
                     Disbursed Payout to Mobile:
                   </span>
                   <span className="font-mono font-bold text-slate-900 text-sm">
-                    {numAmount.toLocaleString()} XAF
+                    {formatMoney(numAmount, "XAF")}
                   </span>
                 </div>
                 <div className="flex justify-between items-center py-1">
@@ -287,15 +314,15 @@ export const SendWithdrawPage: React.FC = () => {
                     Aggregator Gateway Tariff (1.0%):
                   </span>
                   <span className="font-mono text-slate-700">
-                    {fee.toLocaleString()} XAF
+                    {formatMoney(fee, "XAF")}
                   </span>
                 </div>
                 <div className="flex justify-between items-baseline pt-3 border-t border-slate-200">
                   <span className="font-bold text-slate-900 text-sm uppercase">
-                    Total Amount Debited from Wallet:
+                    Total Amount Debited:
                   </span>
-                  <span className="font-mono font-extrabold text-slate-950 text-xl">
-                    {totalDebit.toLocaleString()} XAF
+                  <span className="font-mono font-extrabold text-[#001f5b] text-xl">
+                    {formatMoney(totalDebit, "XAF")}
                   </span>
                 </div>
               </div>
@@ -306,9 +333,9 @@ export const SendWithdrawPage: React.FC = () => {
                   size="default"
                   type="submit"
                   disabled={numAmount <= 0 || totalDebit > wallet.available}
-                  className="px-8 font-semibold"
+                  className="px-8 font-semibold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs"
                 >
-                  Review Withdrawal
+                  Review Authorization <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </form>
@@ -316,13 +343,15 @@ export const SendWithdrawPage: React.FC = () => {
         </Card>
       ) : (
         /* SEND TO ANOTHER E-NAKO WALLET */
-        <Card>
-          <CardHeader className="border-b border-slate-100 pb-4">
-            <CardTitle className="text-base">
+        <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
+          <CardHeader className="border-b border-slate-100 pb-4 bg-slate-50/50">
+            <CardTitle className="text-base font-bold text-slate-900">
               Peer-to-Peer Wallet Transfer
             </CardTitle>
-            <CardDescription className="text-xs">
-              Instant zero-fee transfer to any verified E-NAKO customer account
+            <CardDescription className="text-xs text-slate-500">
+              Instant zero-fee transfer to any verified E-NAKO customer or
+              merchant account
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
@@ -331,37 +360,52 @@ export const SendWithdrawPage: React.FC = () => {
               className="space-y-5 text-xs font-sans"
             >
               <div>
-                <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Recipient Customer Email
+                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-2 text-xs">
+                  Recipient Customer Email / Corporate ID
                 </label>
                 <Input
                   type="email"
-                  placeholder="e.g. brice.ngannou@outlook.fr"
+                  placeholder="e.g. corporate.treasury@cameroon-logistics.cm"
                   value={targetWalletEmail}
                   onChange={(e) => setTargetWalletEmail(e.target.value)}
-                  className="w-full text-xs font-sans"
+                  className="w-full h-11 text-xs font-sans border-slate-300 rounded-xl"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                  Transfer Amount (XAF)
-                </label>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
+                    Transfer Amount (XAF)
+                  </label>
+                  <span className="text-slate-500 font-mono text-xs">
+                    Available:{" "}
+                    <strong className="text-slate-900">
+                      {formatMoney(wallet.available, "XAF")}
+                    </strong>
+                  </span>
+                </div>
                 <Input
                   type="number"
                   placeholder="e.g. 50000"
                   value={sendAmount}
                   onChange={(e) => setSendAmount(e.target.value)}
-                  className="w-full text-base font-bold font-mono"
+                  className="w-full h-11 text-base font-bold font-mono border-slate-300 rounded-xl"
                 />
               </div>
 
-              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 text-xs">
-                <span className="font-bold text-emerald-900 block">
-                  Zero Transaction Fee
-                </span>
-                Internal peer-to-peer transfers are processed instantly with 0
-                XAF charges.
+              <div className="p-4 bg-[#001f5b]/5 rounded-2xl border border-[#001f5b]/15 text-xs flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-[#001f5b] text-white flex items-center justify-center shrink-0">
+                  <Zap className="w-4 h-4 text-[#00c2c7]" />
+                </div>
+                <div>
+                  <span className="font-bold text-[#001f5b] block">
+                    Instant Settlement • Zero Fee
+                  </span>
+                  <span className="text-slate-600">
+                    Internal peer-to-peer ledger updates settle immediately with
+                    0 XAF fees.
+                  </span>
+                </div>
               </div>
 
               <div className="pt-2 flex justify-end">
@@ -369,9 +413,9 @@ export const SendWithdrawPage: React.FC = () => {
                   variant="default"
                   size="default"
                   type="submit"
-                  className="px-8 font-semibold"
+                  className="px-8 font-semibold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs"
                 >
-                  Send Funds
+                  Send Funds <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
             </form>
@@ -385,11 +429,11 @@ export const SendWithdrawPage: React.FC = () => {
           isOpen={isConfirming}
           onClose={() => setIsConfirming(false)}
           title="Confirm Withdrawal Authorization"
-          subtitle="Please inspect the beneficiary recipient and debit total before dispatching."
+          subtitle="Please inspect recipient coordinates and total debit before dispatching."
           maxWidth="md"
         >
           <div className="space-y-4 text-xs font-sans">
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
               <div className="flex justify-between py-1 border-b border-slate-200">
                 <span className="text-slate-500">Recipient Beneficiary:</span>
                 <span className="font-bold text-slate-900">
@@ -405,21 +449,21 @@ export const SendWithdrawPage: React.FC = () => {
               <div className="flex justify-between py-1 border-b border-slate-200">
                 <span className="text-slate-500">Disbursed Amount:</span>
                 <span className="font-mono font-bold text-slate-900">
-                  {numAmount.toLocaleString()} XAF
+                  {formatMoney(numAmount, "XAF")}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-200">
                 <span className="text-slate-500">Gateway Fee:</span>
                 <span className="font-mono text-slate-700">
-                  {fee.toLocaleString()} XAF
+                  {formatMoney(fee, "XAF")}
                 </span>
               </div>
               <div className="flex justify-between py-1.5 pt-2">
                 <span className="font-bold text-slate-900 uppercase">
                   Total Debited:
                 </span>
-                <span className="font-mono font-extrabold text-slate-950 text-base">
-                  {totalDebit.toLocaleString()} XAF
+                <span className="font-mono font-extrabold text-[#001f5b] text-base">
+                  {formatMoney(totalDebit, "XAF")}
                 </span>
               </div>
             </div>
@@ -436,6 +480,7 @@ export const SendWithdrawPage: React.FC = () => {
                 variant="default"
                 size="default"
                 onClick={handleConfirmSubmit}
+                className="bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs"
               >
                 Confirm Payout
               </Button>
@@ -450,7 +495,7 @@ export const SendWithdrawPage: React.FC = () => {
           isOpen={isMfaOpen}
           onClose={() => setIsMfaOpen(false)}
           title="Security Step: Enter MFA Code"
-          subtitle="Confirm this disbursement with your 6-digit verification code."
+          subtitle="Confirm this disbursement with your 6-digit authorization code."
           maxWidth="sm"
         >
           <form
@@ -470,13 +515,13 @@ export const SendWithdrawPage: React.FC = () => {
                     n[i] = clean;
                     setMfaDigits(n);
                   }}
-                  className="w-10 h-12 text-center text-lg font-bold font-mono border border-slate-300 rounded focus:ring-2 focus:ring-emerald-600 focus:outline-none"
+                  className="w-10 h-12 text-center text-lg font-bold font-mono border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#001f5b] focus:outline-none"
                 />
               ))}
             </div>
 
             <p className="text-slate-500 text-xs">
-              Code dispatched to verified mobile ending in ••82.
+              Dispatched to verified device ending in ••82.
             </p>
 
             <div className="pt-2 flex justify-end space-x-2">
@@ -488,7 +533,12 @@ export const SendWithdrawPage: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button variant="default" size="sm" type="submit">
+              <Button
+                variant="default"
+                size="sm"
+                type="submit"
+                className="bg-[#001f5b] hover:bg-[#00153f] text-white"
+              >
                 Authorize Payout
               </Button>
             </div>

@@ -79,7 +79,7 @@ export const WalletsLedgerPage: React.FC = () => {
                     <td className="py-3.5 px-6 text-right text-amber-800 font-semibold">
                       {w.heldAmount.toLocaleString()} {w.currency}
                     </td>
-                    <td className="py-3.5 px-6 text-right font-bold text-emerald-800">
+                    <td className="py-3.5 px-6 text-right font-bold text-[#001f5b]">
                       {w.availableBalance.toLocaleString()} {w.currency}
                     </td>
                     <td className="py-3.5 px-6 font-sans">
@@ -205,22 +205,20 @@ export const WalletsLedgerPage: React.FC = () => {
             </CardHeader>
             <div className="p-6 space-y-6">
               {/* Prominent Zero Row Display */}
-              <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 flex flex-wrap items-center justify-between gap-4">
+              <div className="p-4 bg-[#00c2c7]/10 rounded-xl border border-[#00c2c7]/30 flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider block">
+                  <span className="text-xs font-bold text-[#001f5b] uppercase tracking-wider block">
                     Zero-Sum Ledger Guarantee
                   </span>
-                  <p className="text-xs text-emerald-800 mt-0.5">
+                  <p className="text-xs text-[#001f5b] mt-0.5">
                     Every transaction is posted with balanced debit and credit entries.
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-emerald-700 uppercase font-semibold block">
+                  <span className="text-xs text-[#001f5b] uppercase font-semibold block">
                     Total Net Variance
                   </span>
-                  <span className="text-2xl font-mono font-extrabold text-emerald-950">
-                    0.00 XAF
-                  </span>
+                  <span className="text-2xl font-mono font-extrabold text-[#0a0f2c]">0.00 XAF</span>
                 </div>
               </div>
 
@@ -254,8 +252,8 @@ export const WalletsLedgerPage: React.FC = () => {
                       <td colSpan={3} className="py-3 px-6 uppercase font-sans text-slate-800">
                         Total Sum (Debits & Credits Equal)
                       </td>
-                      <td className="py-3 px-6 text-right text-emerald-900">466,500,000 XAF</td>
-                      <td className="py-3 px-6 text-right text-emerald-900">466,500,000 XAF</td>
+                      <td className="py-3 px-6 text-right text-[#001f5b]">466 500 000 XAF</td>
+                      <td className="py-3 px-6 text-right text-[#001f5b]">466 500 000 XAF</td>
                     </tr>
                   </tbody>
                 </table>

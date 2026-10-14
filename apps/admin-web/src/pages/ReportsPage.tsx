@@ -21,21 +21,21 @@ export const ReportsPage: React.FC = () => {
           date: '2026-10-01',
           ref: 'TX-10921',
           corridor: 'EUR -> XAF',
-          volume: '14,500,000 XAF',
+          volume: '14 500 000 XAF',
           status: 'Completed',
         },
         {
           date: '2026-10-01',
           ref: 'TX-10922',
           corridor: 'GBP -> XAF',
-          volume: '4,200,000 XAF',
+          volume: '4 200 000 XAF',
           status: 'Completed',
         },
         {
           date: '2026-09-30',
           ref: 'TX-10901',
           corridor: 'USD -> XAF',
-          volume: '8,900,000 XAF',
+          volume: '8 900 000 XAF',
           status: 'Completed',
         },
       ])
@@ -44,16 +44,16 @@ export const ReportsPage: React.FC = () => {
         {
           period: '2026-09',
           corridor: 'Inward Remittance',
-          grossFee: '2,450,000 XAF',
-          aggregatorShare: '350,000 XAF',
-          netIncome: '2,100,000 XAF',
+          grossFee: '2 450 000 XAF',
+          aggregatorShare: '350 000 XAF',
+          netIncome: '2 100 000 XAF',
         },
         {
           period: '2026-09',
           corridor: 'Cashout Payouts',
-          grossFee: '1,570,000 XAF',
-          aggregatorShare: '250,000 XAF',
-          netIncome: '1,320,000 XAF',
+          grossFee: '1 570 000 XAF',
+          aggregatorShare: '250 000 XAF',
+          netIncome: '1 320 000 XAF',
         },
       ])
     } else {
@@ -61,22 +61,22 @@ export const ReportsPage: React.FC = () => {
         {
           period: 'Q3 2026',
           metric: 'Tier 1 Accounts',
-          count: '1,420',
-          turnover: '84,000,000 XAF',
+          count: '1 420',
+          turnover: '84 000 000 XAF',
           flags: '0',
         },
         {
           period: 'Q3 2026',
           metric: 'Tier 2 Accounts',
           count: '890',
-          turnover: '340,000,000 XAF',
+          turnover: '340 000 000 XAF',
           flags: '1',
         },
         {
           period: 'Q3 2026',
           metric: 'Tier 3 Corporate',
           count: '115',
-          turnover: '980,000,000 XAF',
+          turnover: '980 000 000 XAF',
           flags: '0',
         },
       ])
@@ -121,7 +121,7 @@ export const ReportsPage: React.FC = () => {
           return (
             <Card
               key={template.id}
-              className={`transition-colors ${isSelected ? 'border-emerald-500 bg-emerald-50/10' : ''}`}
+              className={`transition-colors ${isSelected ? 'border-[#00c2c7]/100 bg-[#00c2c7]/10/10' : ''}`}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -147,7 +147,7 @@ export const ReportsPage: React.FC = () => {
 
       {/* Report Filter & Preview Panel */}
       {activeReport && (
-        <Card className="border-emerald-200">
+        <Card className="border-[#00c2c7]/30">
           <CardHeader className="border-b border-slate-100 pb-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>

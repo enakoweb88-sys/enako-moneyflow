@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCustomer } from "@/mock/CustomerContext";
 import { toast } from "sonner";
+import { UserPlus, ShieldCheck, ArrowRight } from "lucide-react";
 
 export const RegisterPage: React.FC = () => {
   const { setActiveNav } = useCustomer();
@@ -48,8 +49,8 @@ export const RegisterPage: React.FC = () => {
     return {
       score: 100,
       label: "Strong",
-      color: "bg-emerald-600",
-      textCol: "text-emerald-700",
+      color: "bg-[#00c2c7]",
+      textCol: "text-[#00898d]",
     };
   };
 
@@ -71,9 +72,13 @@ export const RegisterPage: React.FC = () => {
   return (
     <div className="py-12 px-4 flex items-center justify-center">
       <div className="w-full max-w-md space-y-6">
-        <Card className="shadow-lg border-slate-200">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
+        <Card className="shadow-lg border-slate-200 rounded-2xl overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
+          <CardHeader className="text-center pb-4 pt-6 bg-slate-50/50 border-b border-slate-100">
+            <div className="w-12 h-12 rounded-xl bg-[#001f5b] text-white flex items-center justify-center mx-auto mb-3 shadow-xs">
+              <UserPlus className="w-6 h-6 text-[#00c2c7]" />
+            </div>
+            <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
               Create an E-NAKO Account
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-1">
@@ -82,13 +87,13 @@ export const RegisterPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="p-6 pt-2">
+          <CardContent className="p-6">
             <form
               onSubmit={handleRegister}
               className="space-y-4 text-xs font-sans"
             >
               <div>
-                <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
+                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
                   Full Legal Name
                 </label>
                 <Input
@@ -96,38 +101,38 @@ export const RegisterPage: React.FC = () => {
                   placeholder="e.g. Samuel Eto’o Fosso"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  className="w-full text-xs"
+                  className="w-full text-xs font-sans border-slate-300 rounded-xl h-10"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
-                  Email Address
+                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
+                  Corporate / Personal Email
                 </label>
                 <Input
                   type="email"
                   placeholder="e.g. s.fosso@enako-group.cm"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full text-xs"
+                  className="w-full text-xs font-sans border-slate-300 rounded-xl h-10"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
-                  Phone Number
+                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
+                  Phone Number (CEMAC / International)
                 </label>
                 <Input
                   type="tel"
                   placeholder="e.g. +237 677 89 23 82"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full text-xs"
+                  className="w-full text-xs font-mono border-slate-300 rounded-xl h-10"
                 />
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
+                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
                   Password
                 </label>
                 <Input
@@ -135,7 +140,7 @@ export const RegisterPage: React.FC = () => {
                   placeholder="Minimum 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full text-xs"
+                  className="w-full text-xs border-slate-300 rounded-xl h-10"
                 />
 
                 {/* Password Strength Bar & Label */}
@@ -158,7 +163,7 @@ export const RegisterPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
+                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
                   Confirm Password
                 </label>
                 <Input
@@ -166,7 +171,7 @@ export const RegisterPage: React.FC = () => {
                   placeholder="Re-enter password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full text-xs"
+                  className="w-full text-xs border-slate-300 rounded-xl h-10"
                 />
                 {confirmPassword && password !== confirmPassword && (
                   <p className="text-rose-600 text-xs mt-1">
@@ -181,22 +186,20 @@ export const RegisterPage: React.FC = () => {
                   size="default"
                   type="submit"
                   disabled={!isValid}
-                  className="w-full font-semibold"
+                  className="w-full font-bold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl h-11 shadow-xs"
                 >
-                  Create account
+                  Create Account <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
 
-              <div className="text-center pt-2 border-t border-slate-100">
-                <span className="text-slate-500">
-                  Already have an account?{" "}
-                </span>
+              <div className="text-center pt-3 border-t border-slate-100">
+                <span className="text-slate-500">Already registered? </span>
                 <button
                   type="button"
                   onClick={() => setActiveNav("login")}
-                  className="text-emerald-700 hover:text-emerald-900 font-semibold underline cursor-pointer"
+                  className="text-[#001f5b] hover:text-[#00c2c7] font-bold underline cursor-pointer transition-colors"
                 >
-                  Log in
+                  Sign in
                 </button>
               </div>
             </form>

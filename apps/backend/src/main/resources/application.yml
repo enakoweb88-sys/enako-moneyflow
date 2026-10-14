@@ -5,7 +5,7 @@ spring:
     name: moneyflow
 
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:moneyflow}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:moneyflow}?sslmode=${DB_SSLMODE:require}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -38,4 +38,4 @@ management:
       show-details: always
 
 server:
-  port: ${PORT:8081}
+  port: ${PORT:8080}

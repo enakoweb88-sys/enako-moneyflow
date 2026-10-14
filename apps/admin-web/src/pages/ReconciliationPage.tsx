@@ -106,7 +106,7 @@ export const ReconciliationPage: React.FC = () => {
                   >
                     {run.openCount}
                   </td>
-                  <td className="py-3.5 px-6 text-right font-semibold text-emerald-800">
+                  <td className="py-3.5 px-6 text-right font-semibold text-[#001f5b]">
                     {run.matchPercentage}%
                   </td>
                   <td className="py-3.5 px-6 font-sans">
@@ -148,7 +148,7 @@ export const ReconciliationPage: React.FC = () => {
               type="date"
               value={runDate}
               onChange={(e) => setRunDate(e.target.value)}
-              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
             />
           </div>
 
@@ -159,7 +159,7 @@ export const ReconciliationPage: React.FC = () => {
             <select
               value={providerSource}
               onChange={(e) => setProviderSource(e.target.value)}
-              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
             >
               <option value="MTN Mobile Money Gateway">MTN Mobile Money Gateway</option>
               <option value="Orange Money Gateway">Orange Money Gateway</option>
@@ -200,7 +200,7 @@ export const ReconciliationPage: React.FC = () => {
                 <span className="text-slate-500 font-semibold uppercase block">
                   Match Percentage
                 </span>
-                <span className="text-xl font-bold font-mono text-emerald-800 mt-0.5 block">
+                <span className="text-xl font-bold font-mono text-[#001f5b] mt-0.5 block">
                   {selectedRun.matchPercentage}%
                 </span>
               </div>

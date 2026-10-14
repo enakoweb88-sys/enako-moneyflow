@@ -71,7 +71,7 @@ export const WithdrawalsPage: React.FC = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-9 px-3 bg-white border border-slate-300 rounded-md text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                className="h-9 px-3 bg-white border border-slate-300 rounded-md text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#001f5b]"
               >
                 <option value="ALL">All Statuses ({withdrawals.length})</option>
                 <option value="Requested">Requested</option>

@@ -1,7 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +16,15 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useCustomer } from "@/mock/CustomerContext";
 import type { CustomerBeneficiary } from "@/mock/customerData";
 import { toast } from "sonner";
+import {
+  Plus,
+  Users,
+  ShieldCheck,
+  Building2,
+  Smartphone,
+  Edit2,
+  Trash2,
+} from "lucide-react";
 
 export const BeneficiariesPage: React.FC = () => {
   const { beneficiaries, addBeneficiary, removeBeneficiary } = useCustomer();
@@ -48,32 +62,67 @@ export const BeneficiariesPage: React.FC = () => {
     setEditingBen(null);
   };
 
+  const getProviderIcon = (prov: string) => {
+    if (prov.includes("MTN") || prov.includes("Orange")) {
+      return <Smartphone className="w-4 h-4 text-[#001f5b]" />;
+    }
+    return <Building2 className="w-4 h-4 text-[#001f5b]" />;
+  };
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="Saved Beneficiaries"
-        subtitle="Manage authorized mobile money wallets and bank accounts for instant cashouts"
+        subtitle="Manage authorized mobile money wallets and bank clearing coordinates for automated disbursements"
         action={
           <Button
             variant="default"
             size="sm"
             onClick={() => setIsAddOpen(true)}
+            className="bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs"
           >
-            Add Beneficiary
+            <Plus className="w-4 h-4 mr-1.5" /> Add Beneficiary
           </Button>
         }
       />
 
-      {/* Beneficiaries Table */}
-      <Card>
-        <CardHeader className="border-b border-slate-100 pb-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">
-              Registered Accounts ({beneficiaries.length})
-            </CardTitle>
-            <span className="text-xs text-slate-500 font-mono">
-              24-Hour Cooldown on New Additions
+      {/* Security Notice */}
+      <div className="p-4 rounded-2xl bg-[#001f5b]/5 border border-[#001f5b]/15 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[#001f5b] text-white flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-4 h-4 text-[#00c2c7]" />
+          </div>
+          <div>
+            <span className="text-xs font-bold text-[#001f5b] block">
+              Dual-Control Security Cooldown Active
             </span>
+            <span className="text-[11px] text-slate-600">
+              Newly registered payout accounts undergo a 24-hour verification
+              hold before high-volume withdrawals are permitted.
+            </span>
+          </div>
+        </div>
+        <Badge
+          variant="neutral"
+          className="text-[10px] font-mono shrink-0 hidden sm:inline-flex"
+        >
+          AML / BEAC Standard
+        </Badge>
+      </div>
+
+      {/* Beneficiaries Table */}
+      <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
+        <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
+        <CardHeader className="border-b border-slate-100 pb-4 bg-slate-50/50">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-bold text-slate-900">
+                Registered Beneficiaries ({beneficiaries.length})
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500">
+                Verified payment destinations across Cameroon and the CEMAC zone
+              </CardDescription>
+            </div>
           </div>
         </CardHeader>
 
@@ -95,7 +144,12 @@ export const BeneficiariesPage: React.FC = () => {
                   className="hover:bg-slate-50/80 transition-colors"
                 >
                   <td className="py-3.5 px-6 font-sans font-semibold text-slate-900">
-                    {ben.name}
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+                        {getProviderIcon(ben.provider)}
+                      </div>
+                      <span>{ben.name}</span>
+                    </div>
                   </td>
                   <td className="py-3.5 px-6 font-sans text-slate-700">
                     {ben.provider}
@@ -104,7 +158,7 @@ export const BeneficiariesPage: React.FC = () => {
                     {ben.accountMasked}
                   </td>
                   <td className="py-3.5 px-6 font-sans">
-                    <div className="space-y-1">
+                    <div className="space-y-0.5">
                       <Badge
                         variant={
                           ben.status === "Active" ? "success" : "warning"
@@ -113,27 +167,29 @@ export const BeneficiariesPage: React.FC = () => {
                         {ben.status}
                       </Badge>
                       {ben.cooldownNote && (
-                        <p className="text-slate-500 text-xs italic">
+                        <p className="text-slate-500 text-[10px] italic">
                           {ben.cooldownNote}
                         </p>
                       )}
                     </div>
                   </td>
-                  <td className="py-3.5 px-6 text-right font-sans space-x-3">
-                    <button
-                      type="button"
+                  <td className="py-3.5 px-6 text-right font-sans space-x-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setEditingBen(ben)}
-                      className="text-xs text-slate-600 hover:text-slate-900 font-semibold cursor-pointer underline"
+                      className="text-xs text-slate-600 hover:text-slate-900 h-8 px-2"
                     >
-                      Edit
-                    </button>
-                    <button
-                      type="button"
+                      <Edit2 className="w-3.5 h-3.5 mr-1" /> Edit
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => setDeleteTarget(ben)}
-                      className="text-xs text-rose-600 hover:text-rose-800 font-semibold cursor-pointer underline"
+                      className="text-xs text-rose-600 hover:text-rose-800 h-8 px-2"
                     >
-                      Remove
-                    </button>
+                      <Trash2 className="w-3.5 h-3.5 mr-1" /> Remove
+                    </Button>
                   </td>
                 </tr>
               ))}
@@ -147,7 +203,7 @@ export const BeneficiariesPage: React.FC = () => {
         isOpen={isAddOpen}
         onClose={() => setIsAddOpen(false)}
         title="Add New Beneficiary Account"
-        subtitle="For security against unauthorized withdrawals, new beneficiaries undergo a 24-hour cooldown."
+        subtitle="For security against unauthorized withdrawals, newly added accounts enter a 24-hour verification cooldown."
         maxWidth="md"
       >
         <form
@@ -155,20 +211,20 @@ export const BeneficiariesPage: React.FC = () => {
           className="space-y-4 text-xs font-sans"
         >
           <div>
-            <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
-              Beneficiary Full Name
+            <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
+              Beneficiary Legal Name
             </label>
             <Input
               type="text"
               placeholder="e.g. Marcella Ebong"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full text-xs font-sans"
+              className="w-full text-xs font-sans border-slate-300 rounded-xl h-10"
             />
           </div>
 
           <div>
-            <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
+            <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
               Provider / Payment Switch
             </label>
             <select
@@ -176,7 +232,7 @@ export const BeneficiariesPage: React.FC = () => {
               onChange={(e) =>
                 setProvider(e.target.value as CustomerBeneficiary["provider"])
               }
-              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
             >
               <option value="MTN Mobile Money">
                 MTN Mobile Money Cameroun
@@ -190,7 +246,7 @@ export const BeneficiariesPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
+            <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
               Mobile Number / Bank Account Number
             </label>
             <Input
@@ -198,7 +254,7 @@ export const BeneficiariesPage: React.FC = () => {
               placeholder="e.g. +237 677 00 11 22 or IBAN"
               value={account}
               onChange={(e) => setAccount(e.target.value)}
-              className="w-full text-xs font-mono"
+              className="w-full text-xs font-mono border-slate-300 rounded-xl h-10"
             />
           </div>
 
@@ -208,10 +264,16 @@ export const BeneficiariesPage: React.FC = () => {
               size="sm"
               type="button"
               onClick={() => setIsAddOpen(false)}
+              className="rounded-xl"
             >
               Cancel
             </Button>
-            <Button variant="default" size="sm" type="submit">
+            <Button
+              variant="default"
+              size="sm"
+              type="submit"
+              className="bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl"
+            >
               Save Beneficiary
             </Button>
           </div>
@@ -224,7 +286,7 @@ export const BeneficiariesPage: React.FC = () => {
           isOpen={!!editingBen}
           onClose={() => setEditingBen(null)}
           title={`Edit Beneficiary: ${editingBen.name}`}
-          subtitle="Update recipient profile information."
+          subtitle="Update recipient profile details."
           maxWidth="md"
         >
           <form
@@ -232,23 +294,23 @@ export const BeneficiariesPage: React.FC = () => {
             className="space-y-4 text-xs font-sans"
           >
             <div>
-              <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
+              <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
                 Beneficiary Name
               </label>
               <Input
                 type="text"
                 defaultValue={editingBen.name}
-                className="w-full text-xs font-sans"
+                className="w-full text-xs font-sans border-slate-300 rounded-xl h-10"
               />
             </div>
             <div>
-              <label className="block text-slate-700 font-semibold uppercase tracking-wider mb-1">
+              <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
                 Account Number
               </label>
               <Input
                 type="text"
                 defaultValue={editingBen.accountReal}
-                className="w-full text-xs font-mono"
+                className="w-full text-xs font-mono border-slate-300 rounded-xl h-10"
               />
             </div>
             <div className="pt-3 border-t border-slate-200 flex justify-end space-x-3">
@@ -257,10 +319,16 @@ export const BeneficiariesPage: React.FC = () => {
                 size="sm"
                 type="button"
                 onClick={() => setEditingBen(null)}
+                className="rounded-xl"
               >
                 Cancel
               </Button>
-              <Button variant="default" size="sm" type="submit">
+              <Button
+                variant="default"
+                size="sm"
+                type="submit"
+                className="bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl"
+              >
                 Save Changes
               </Button>
             </div>

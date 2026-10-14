@@ -132,7 +132,7 @@ export const FeesPage: React.FC = () => {
             <select
               value={transactionType}
               onChange={(e) => setTransactionType(e.target.value)}
-              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
             >
               <option value="Remittance Inward (EUR)">Remittance Inward (EUR)</option>
               <option value="Remittance Inward (USD)">Remittance Inward (USD)</option>
@@ -151,7 +151,7 @@ export const FeesPage: React.FC = () => {
               <select
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+                className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
               >
                 <option value="XAF">XAF</option>
                 <option value="EUR">EUR</option>
@@ -167,7 +167,7 @@ export const FeesPage: React.FC = () => {
               <select
                 value={structureType}
                 onChange={(e) => setStructureType(e.target.value as FeeRule['structureType'])}
-                className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+                className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
               >
                 <option value="Percentage">Percentage Flat</option>
                 <option value="Fixed">Fixed Amount</option>
@@ -253,7 +253,7 @@ export const FeesPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleAddTier}
-                  className="text-xs text-emerald-700 hover:text-emerald-900 font-semibold cursor-pointer underline"
+                  className="text-xs text-[#001f5b] hover:text-[#001f5b] font-semibold cursor-pointer underline"
                 >
                   Add Tier
                 </button>

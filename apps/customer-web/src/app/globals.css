@@ -2,20 +2,168 @@
 
 @layer base {
   :root {
-    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
-      Cantarell, sans-serif;
+    --font-sans: var(--font-sans), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-serif: var(--font-serif), 'Newsreader', Georgia, Cambria, 'Times New Roman', serif;
   }
 
   body {
     font-family: var(--font-sans);
-    background-color: #f8fafc;
+    background-color: #ffffff;
     color: #0f172a;
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
+.font-serif-accent {
+  font-family: var(--font-serif);
+  font-style: italic;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Button compressed active-state feedback */
+.btn-press-active {
+  transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms ease;
+}
 .btn-press-active:active {
   transform: scale(0.97);
+}
+
+/* Primary Button Ambient Sheen */
+.btn-sheen {
+  position: relative;
+  overflow: hidden;
+}
+.btn-sheen::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    60deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.18) 50%,
+    transparent 80%
+  );
+  transform: rotate(25deg);
+  transition: transform 600ms ease;
+}
+.btn-sheen:hover::after {
+  transform: rotate(25deg) translate(80%, 0);
+}
+
+/* Stripe-Caliber Ambient Morphing Gradient Mesh */
+@keyframes morphMesh {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  33% {
+    transform: translate(30px, -45px) scale(1.1) rotate(5deg);
+  }
+  66% {
+    transform: translate(-25px, 20px) scale(0.95) rotate(-4deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes morphMeshSecondary {
+  0% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+  40% {
+    transform: translate(-40px, -20px) scale(1.08) rotate(-6deg);
+  }
+  80% {
+    transform: translate(25px, 35px) scale(0.92) rotate(4deg);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1) rotate(0deg);
+  }
+}
+
+.mesh-blob-1 {
+  animation: morphMesh 18s ease-in-out infinite alternate;
+}
+
+.mesh-blob-2 {
+  animation: morphMeshSecondary 22s ease-in-out infinite alternate;
+}
+
+/* Marquee infinite scroll */
+@keyframes marqueeScroll {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 32s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Subtle Card Hover Transitions */
+.bento-card {
+  transition: transform 240ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 240ms cubic-bezier(0.16, 1, 0.3, 1), border-color 240ms ease;
+}
+.bento-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px -8px rgba(0, 31, 91, 0.08), 0 4px 12px -2px rgba(0, 31, 91, 0.04);
+}
+
+/* Subtle Animated Code Ticker / Ledger Pulse */
+@keyframes pulseSubtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+.pulse-indicator {
+  animation: pulseSubtle 2.4s ease-in-out infinite;
+}
+
+/* Dark Section Grid Lines */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* Prefers-Reduced-Motion Compliance */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .mesh-blob-1,
+  .mesh-blob-2,
+  .animate-marquee,
+  .pulse-indicator {
+    animation: none !important;
+    transform: none !important;
+  }
+  .bento-card:hover {
+    transform: none !important;
+  }
 }

@@ -192,7 +192,7 @@ export const KycReviewPage: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => setViewingDoc(doc.name)}
-                          className="text-xs text-emerald-700 hover:text-emerald-900 font-semibold underline cursor-pointer"
+                          className="text-xs text-[#001f5b] hover:text-[#001f5b] font-semibold underline cursor-pointer"
                         >
                           View Document
                         </button>
@@ -203,9 +203,9 @@ export const KycReviewPage: React.FC = () => {
 
                 {/* Document Viewer Preview Block */}
                 {viewingDoc && (
-                  <div className="mt-4 p-3 bg-white rounded border border-emerald-300">
+                  <div className="mt-4 p-3 bg-white rounded border border-[#00c2c7]">
                     <div className="flex justify-between items-center pb-2 border-b border-slate-100">
-                      <span className="font-semibold text-emerald-800">Preview: {viewingDoc}</span>
+                      <span className="font-semibold text-[#001f5b]">Preview: {viewingDoc}</span>
                       <button
                         type="button"
                         onClick={() => setViewingDoc(null)}

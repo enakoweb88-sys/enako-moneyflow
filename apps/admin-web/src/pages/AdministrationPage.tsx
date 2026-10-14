@@ -169,7 +169,7 @@ export const AdministrationPage: React.FC<AdministrationPageProps> = ({ initialT
                       {row.customerSupport}
                     </td>
                     <td className="py-3 px-3 text-center text-slate-700 font-mono">{row.ceo}</td>
-                    <td className="py-3 px-3 text-center font-bold text-emerald-800 bg-slate-50 font-mono">
+                    <td className="py-3 px-3 text-center font-bold text-[#001f5b] bg-slate-50 font-mono">
                       {row.admin}
                     </td>
                   </tr>
@@ -277,7 +277,7 @@ export const AdministrationPage: React.FC<AdministrationPageProps> = ({ initialT
             <select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value as UserRole)}
-              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
             >
               {ALL_ROLES.map((r) => (
                 <option key={r} value={r}>

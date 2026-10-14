@@ -1,0 +1,56 @@
+name: moneyflow
+
+# Production stack for the shared VPS. PostgreSQL is provided by Supabase;
+# no database port or database volume is created on this server.
+services:
+  backend:
+    image: ${BACKEND_IMAGE:?Set BACKEND_IMAGE in /opt/moneyflow/.env}
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      PORT: 8080
+      SPRING_PROFILES_ACTIVE: prod
+    ports:
+      - "127.0.0.1:9090:8080"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -q --spider http://localhost:8080/actuator/health || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 45s
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - moneyflow_internal
+
+  admin-web:
+    image: ${ADMIN_IMAGE:?Set ADMIN_IMAGE in /opt/moneyflow/.env}
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:9091:80"
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - moneyflow_internal
+
+  customer-web:
+    image: ${CUSTOMER_IMAGE:?Set CUSTOMER_IMAGE in /opt/moneyflow/.env}
+    restart: unless-stopped
+    init: true
+    ports:
+      - "127.0.0.1:9092:3000"
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - moneyflow_internal
+
+networks:
+  moneyflow_internal:
+    driver: bridge

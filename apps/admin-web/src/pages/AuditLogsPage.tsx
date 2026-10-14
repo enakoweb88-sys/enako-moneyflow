@@ -184,11 +184,11 @@ export const AuditLogsPage: React.FC = () => {
               </div>
 
               {/* New Value */}
-              <div className="p-4 bg-emerald-50/50 rounded-lg border border-emerald-200 space-y-1">
-                <span className="font-bold text-emerald-900 uppercase tracking-wide block border-b border-emerald-200 pb-1">
+              <div className="p-4 bg-[#00c2c7]/10 rounded-lg border border-[#00c2c7]/30 space-y-1">
+                <span className="font-bold text-[#001f5b] uppercase tracking-wide block border-b border-[#00c2c7]/30 pb-1">
                   Mutated State (New Value)
                 </span>
-                <p className="font-mono text-emerald-950 pt-1 font-semibold leading-relaxed">
+                <p className="font-mono text-[#0a0f2c] pt-1 font-semibold leading-relaxed">
                   {selectedLog.newValue || '—'}
                 </p>
               </div>

@@ -118,7 +118,7 @@ export const FxRatesPage: React.FC = () => {
                     <td className="py-3.5 px-6 text-right font-bold text-slate-900">
                       {rate.customerRate.toFixed(3)}
                     </td>
-                    <td className="py-3.5 px-6 text-right text-emerald-800 font-medium">
+                    <td className="py-3.5 px-6 text-right text-[#001f5b] font-medium">
                       {spread.toFixed(3)}
                     </td>
                     <td className="py-3.5 px-6 font-sans">
@@ -171,7 +171,7 @@ export const FxRatesPage: React.FC = () => {
                   setCustomerRate('435.00')
                 }
               }}
-              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-600 font-sans"
+              className="w-full h-10 px-3 bg-white border border-slate-300 rounded-md text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b] font-sans"
             >
               <option value="EUR / XAF">EUR / XAF</option>
               <option value="USD / XAF">USD / XAF</option>
@@ -228,7 +228,7 @@ export const FxRatesPage: React.FC = () => {
               placeholder="e.g. Central bank parity revaluation, market volatility hedge, or promotional corridor incentive..."
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600 text-slate-900"
+              className="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#001f5b] text-slate-900"
             />
           </div>
 

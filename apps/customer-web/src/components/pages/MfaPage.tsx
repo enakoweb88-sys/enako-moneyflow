@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useCustomer } from "@/mock/CustomerContext";
 import { toast } from "sonner";
+import { ShieldCheck, KeyRound, ArrowRight } from "lucide-react";
 
 export const MfaPage: React.FC = () => {
   const { setIsLoggedIn, setActiveNav } = useCustomer();
@@ -66,9 +67,13 @@ export const MfaPage: React.FC = () => {
   return (
     <div className="py-16 px-4 flex items-center justify-center">
       <div className="w-full max-w-md space-y-6">
-        <Card className="shadow-lg border-slate-200">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-2xl font-bold tracking-tight text-slate-900">
+        <Card className="shadow-lg border-slate-200 rounded-2xl overflow-hidden">
+          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
+          <CardHeader className="text-center pb-4 pt-6 bg-slate-50/50 border-b border-slate-100">
+            <div className="w-12 h-12 rounded-xl bg-[#001f5b] text-white flex items-center justify-center mx-auto mb-3 shadow-xs">
+              <KeyRound className="w-6 h-6 text-[#00c2c7]" />
+            </div>
+            <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
               Two-Factor Authentication
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 mt-1">
@@ -77,7 +82,7 @@ export const MfaPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="p-6 pt-2">
+          <CardContent className="p-6">
             <form onSubmit={handleVerify} className="space-y-6">
               {/* Six Individual Digit Input Boxes */}
               <div className="flex justify-between items-center gap-2">
@@ -93,7 +98,7 @@ export const MfaPage: React.FC = () => {
                     value={digit}
                     onChange={(e) => handleDigitChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
-                    className="w-12 h-14 text-center text-xl font-bold font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-slate-900 bg-white shadow-xs transition-all"
+                    className="w-12 h-14 text-center text-xl font-bold font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#001f5b] focus:border-[#001f5b] text-slate-900 bg-white shadow-xs transition-all"
                   />
                 ))}
               </div>
@@ -109,7 +114,7 @@ export const MfaPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleResend}
-                    className="text-emerald-700 hover:text-emerald-900 font-bold underline cursor-pointer"
+                    className="text-[#001f5b] hover:text-[#00c2c7] font-bold underline cursor-pointer transition-colors"
                   >
                     Resend code
                   </button>
@@ -123,9 +128,10 @@ export const MfaPage: React.FC = () => {
                   size="default"
                   type="submit"
                   disabled={!isComplete}
-                  className="w-full font-semibold"
+                  className="w-full font-bold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl h-11 shadow-xs"
                 >
-                  Verify Authentication Code
+                  Verify Authorization Code{" "}
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
 

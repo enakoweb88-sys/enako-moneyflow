@@ -19,6 +19,8 @@ import {
 } from "./customerData";
 import { toast } from "sonner";
 
+export type CustomerEnvironment = "sandbox" | "live";
+
 interface CustomerContextType {
   isLoggedIn: boolean;
   setIsLoggedIn: (logged: boolean) => void;
@@ -26,6 +28,8 @@ interface CustomerContextType {
   setActiveNav: (nav: string) => void;
   language: "EN" | "FR";
   toggleLanguage: () => void;
+  environment: CustomerEnvironment;
+  setEnvironment: (env: CustomerEnvironment) => void;
 
   user: CustomerUser;
   wallet: CustomerWallet;
@@ -59,9 +63,11 @@ const CustomerContext = createContext<CustomerContextType | undefined>(
 export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
-  const [activeNav, setActiveNav] = useState("dashboard");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activeNav, setActiveNav] = useState("landing");
   const [language, setLanguage] = useState<"EN" | "FR">("EN");
+  const [environment, setEnvironment] =
+    useState<CustomerEnvironment>("sandbox");
 
   const [user, setUser] = useState<CustomerUser>(INITIAL_CUSTOMER_USER);
   const [wallet, setWallet] = useState<CustomerWallet>(INITIAL_WALLET);
@@ -220,6 +226,8 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
         setActiveNav,
         language,
         toggleLanguage,
+        environment,
+        setEnvironment,
         user,
         wallet,
         activities,

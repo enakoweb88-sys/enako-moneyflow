@@ -19,6 +19,7 @@ import { ProfileKycPage } from "@/components/pages/ProfileKycPage";
 import { SecurityPage } from "@/components/pages/SecurityPage";
 import { NotificationsPage } from "@/components/pages/NotificationsPage";
 import { SupportPage } from "@/components/pages/SupportPage";
+import { CustomerDevelopersPage } from "@/components/pages/CustomerDevelopersPage";
 
 export default function Home() {
   const { isLoggedIn, activeNav, setActiveNav } = useCustomer();
@@ -41,6 +42,10 @@ export default function Home() {
         default:
           return <LandingPage />;
       }
+    }
+
+    if (activeNav.startsWith("dev-") || activeNav === "developers") {
+      return <CustomerDevelopersPage initialSubPage={activeNav} />;
     }
 
     // Authenticated application pages
@@ -67,11 +72,13 @@ export default function Home() {
     }
   };
 
-  // Logged-out layout: Full width, no sidebar
-  if (
-    !isLoggedIn ||
-    ["landing", "register", "login", "mfa"].includes(activeNav)
-  ) {
+  // Dedicated Public Marketing Homepage (Stripe-caliber design with custom sticky nav & mega-footer)
+  if (!isLoggedIn && activeNav === "landing") {
+    return <LandingPage />;
+  }
+
+  // Logged-out auth pages (Register, Login, MFA): Clean layout with CustomerHeader
+  if (!isLoggedIn || ["register", "login", "mfa"].includes(activeNav)) {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
         <CustomerHeader />
@@ -108,7 +115,7 @@ export default function Home() {
             onClick={() => setActiveNav(tab.id)}
             className={`px-3 py-1.5 rounded text-xs whitespace-nowrap font-medium transition-colors ${
               activeNav === tab.id
-                ? "bg-emerald-600 text-white font-semibold"
+                ? "bg-[#001f5b] text-white font-semibold"
                 : "text-slate-600 hover:bg-slate-100"
             }`}
           >

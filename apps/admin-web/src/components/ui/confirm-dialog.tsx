@@ -71,7 +71,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
                 }}
                 rows={3}
                 placeholder={reasonPlaceholder}
-                className="w-full text-sm px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 text-slate-900 placeholder:text-slate-400"
+                className="w-full text-sm px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#001f5b] focus:border-[#001f5b] text-slate-900 placeholder:text-slate-400"
               />
               {error && <p className="text-xs text-rose-600 mt-1 font-medium">{error}</p>}
             </div>
