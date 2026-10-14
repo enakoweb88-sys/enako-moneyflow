@@ -23,6 +23,8 @@ jobs:
           fetch-depth: 0
       - name: Run Gitleaks Scan
         uses: gitleaks/gitleaks-action@v2
+        with:
+          args: detect --source . --redact --no-git
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_CONFIG: .gitleaks.toml
@@ -93,7 +95,7 @@ jobs:
         working-directory: apps/backend
         run: mvn test -Dtest="*IntegrationTest" -B
 
-  backend-architecture-tests:
+  backend-archunit:
     name: "Backend: Architecture Tests"
     runs-on: ubuntu-latest
     needs: [backend-compile]
