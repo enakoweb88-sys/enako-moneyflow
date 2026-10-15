@@ -1,104 +1,49 @@
-name: CD Production
+name: Production Release Gate
 
 on:
   workflow_dispatch:
     inputs:
-      artifact_sha:
-        description: "Git SHA / Tag of the artifact that passed Staging & UAT verification"
+      artifact_tag:
+        description: "Eight-character immutable image tag that passed Staging verification"
         required: true
         type: string
       confirmation_text:
-        description: 'Type "DEPLOY-TO-PRODUCTION" to confirm high-value release'
+        description: 'Type "APPROVE-PRODUCTION-RELEASE" to prepare a release handoff'
         required: true
         type: string
 
+permissions:
+  contents: read
+
 concurrency:
-  group: cd-production
+  group: production-release-gate
   cancel-in-progress: false
 
 jobs:
-  # ========================================================
-  # PRODUCTION DEPLOYMENT (Guarded by GitHub Environment Approval)
-  # ========================================================
-  deploy-production:
-    name: "Production: Deploy Immutable Verified Artifact"
+  release-gate:
+    name: Validate Production Release Handoff
     runs-on: ubuntu-latest
-    # HARD GATE: GitHub Environment 'production' requires named peer approval
     environment:
       name: production
       url: https://moneyflow.enako.cm
     steps:
-      - name: Validate Confirmation Input
-        run: |
-          if [ "${{ github.event.inputs.confirmation_text }}" != "DEPLOY-TO-PRODUCTION" ]; then
-            echo "❌ Deployment confirmation token mismatched. Aborting."
-            exit 1
-          fi
-          echo "Verified authorization token."
-
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.inputs.artifact_sha }}
-
-      - name: Verify Immutable Container Image Digest Exists
-        run: |
-          IMAGE_TAG="${{ github.event.inputs.artifact_sha }}"
-          echo "Verifying existing container image digest for tag: ${IMAGE_TAG}"
-          echo "Image proven to have passed Staging and UAT test suites without rebuild."
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: "temurin"
-          java-version: "21"
-
-      # Controlled Flyway Database Migration
-      - name: Run Backward-Compatible Production Database Migrations
-        working-directory: apps/backend
+      - name: Validate approval and immutable tag
         env:
-          PROD_DB_URL: ${{ secrets.PROD_DB_URL }}
-          PROD_DB_USER: ${{ secrets.PROD_DB_USER }}
-          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          ARTIFACT_TAG: ${{ inputs.artifact_tag }}
+          CONFIRMATION_TEXT: ${{ inputs.confirmation_text }}
         run: |
-          echo "Applying backward-compatible migrations..."
-          if [ -n "${PROD_DB_URL}" ]; then
-            mvn flyway:migrate -Dflyway.url="${PROD_DB_URL}" -Dflyway.user="${PROD_DB_USER}" -Dflyway.password="${PROD_DB_PASSWORD}"
-          else
-            echo "Simulating production Flyway migration against live DB cluster..."
-          fi
+          test "$CONFIRMATION_TEXT" = "APPROVE-PRODUCTION-RELEASE"
+          printf '%s' "$ARTIFACT_TAG" | grep -Eq '^[0-9a-f]{8}$'
 
-      # Rolling Deployment with Health Checks and Automatic Rollback
-      - name: Execute Rolling Deployment with Health Check & Automatic Rollback
-        id: deploy
+      - name: Create release handoff summary
+        env:
+          ARTIFACT_TAG: ${{ inputs.artifact_tag }}
         run: |
-          echo "Initiating rolling deployment (50% traffic shift)..."
-          CURRENT_HEALTHY_TAG="prod-previous"
-          NEW_TAG="${{ github.event.inputs.artifact_sha }}"
-
-          # Health check probe loop (30s)
-          HEALTHY=true
-          echo "Probing /actuator/health endpoint on new canary task..."
-
-          # If health check fails, rollback immediately:
-          if [ "$HEALTHY" = false ]; then
-            echo "🚨 [ROLLBACK TRIGGERED] Canary health check failed! Rolling back to ${CURRENT_HEALTHY_TAG}..."
-            echo "::error::Production health check failed. Reverted traffic to previous stable version."
-            exit 1
-          fi
-
-          echo "✅ Health check PASSED. Completing 100% traffic shift to ${NEW_TAG}."
-
-  # ========================================================
-  # POST-DEPLOY READ-ONLY SMOKE TEST JOB
-  # ========================================================
-  post-deploy-smoke-test:
-    name: "Production: Read-Only Live Smoke Tests"
-    runs-on: ubuntu-latest
-    needs: [deploy-production]
-    steps:
-      - name: Validate Live Read-Only Endpoints
-        run: |
-          echo "Verifying production live endpoints..."
-          echo "1. Checking GET /api/v1/platform/health... 200 OK"
-          echo "2. Checking GET /api/v1/fx/rates/live... 200 OK"
-          echo "3. Checking GET /api/v1/customer/status... 200 OK"
-          echo "✅ Production traffic verified operational."
+          {
+            echo "## Production release handoff approved"
+            echo
+            echo "Approved immutable tag: \`$ARTIFACT_TAG\`"
+            echo
+            echo "This workflow intentionally does not deploy, migrate, or access the production database."
+            echo "Perform the documented VPS deployment only after peer approval and a maintenance decision."
+          } >> "$GITHUB_STEP_SUMMARY"

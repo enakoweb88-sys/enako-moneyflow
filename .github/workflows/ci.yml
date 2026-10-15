@@ -111,7 +111,7 @@ jobs:
         run: mvn test -Dtest="ArchitectureTest" -B
 
   backend-sonar:
-    name: "Backend: Sonar Quality Gate"
+    name: "Backend: Sonar Quality Gate (when configured)"
     runs-on: ubuntu-latest
     needs: [backend-unit-tests]
     steps:
@@ -131,8 +131,7 @@ jobs:
           if [ -n "${SONAR_TOKEN}" ]; then
             mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=enako_moneyflow
           else
-            echo "SONAR_TOKEN not set; executing local static check"
-            mvn checkstyle:check -Dcheckstyle.config.location=google_checks.xml || true
+            echo "::notice::SONAR_TOKEN is not configured; Sonar analysis was not run."
           fi
 
   backend-dependency-check:
@@ -147,7 +146,7 @@ jobs:
           cache: "maven"
       - name: OWASP Dependency Check
         working-directory: apps/backend
-        run: mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7.0 -B || true
+        run: mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7.0 -B
 
   # ========================================================
   # FRONTEND CI JOBS (Next.js, Vite, Turborepo, pnpm)
@@ -243,24 +242,3 @@ jobs:
           path: |
             apps/admin-web/dist
             apps/customer-web/.next
-
-  frontend-smoke-tests:
-    name: "Frontend: Playwright Critical Path Smoke Tests"
-    runs-on: ubuntu-latest
-    needs: [frontend-build]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 12.8.1
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - name: Run Smoke Verification Tests
-        run: |
-          echo "Executing Critical Path Smoke Tests (Login & Remittance Flow)..."
-          pnpm --filter @enako/admin-web run build
-          pnpm --filter @enako/customer-web run build
-          echo "Smoke tests passed."

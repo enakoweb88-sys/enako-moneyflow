@@ -1,0 +1,46 @@
+name: Verify Staging Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_zap_report:
+        description: "Run the report-only OWASP ZAP baseline scan after health checks"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-staging
+  cancel-in-progress: false
+
+jobs:
+  health-check:
+    name: Verify Live Staging Endpoints
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.moneyflow.enako.cm
+    steps:
+      - name: Verify customer, admin, and API health
+        run: |
+          set -euo pipefail
+          curl --fail --show-error --silent --retry 3 --retry-all-errors https://staging.moneyflow.enako.cm/ > /dev/null
+          curl --fail --show-error --silent --retry 3 --retry-all-errors https://staging.moneyflow-admin.enako.cm/ > /dev/null
+          curl --fail --show-error --silent --retry 3 --retry-all-errors https://staging.moneyflow-api.enako.cm/actuator/health > /dev/null
+
+  zap-baseline-report:
+    name: OWASP ZAP Baseline Report
+    runs-on: ubuntu-latest
+    needs: [health-check]
+    if: inputs.run_zap_report
+    steps:
+      - name: Run report-only OWASP ZAP baseline scan
+        uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: https://staging.moneyflow.enako.cm
+          fail_action: false
+          allow_issue_writing: false
+          cmd_options: "-m 2"
