@@ -56,7 +56,9 @@ export default function Home() {
     }
 
     if (activeNav.startsWith("dev-") || activeNav === "developers") {
-      return <CustomerDevelopersPage initialSubPage={activeNav} />;
+      return (
+        <CustomerDevelopersPage key={activeNav} initialSubPage={activeNav} />
+      );
     }
 
     // Authenticated application pages

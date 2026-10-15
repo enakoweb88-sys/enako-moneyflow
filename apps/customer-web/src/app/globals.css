@@ -26,6 +26,52 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* MoneyFlow workspace: calm, data-first surfaces with E-NAKO brand accents. */
+:root {
+  --mf-ink: #182b49;
+  --mf-copy: #42526e;
+  --mf-line: #d9e2ef;
+  --mf-soft: #f6f8fb;
+  --mf-navy: #001f5b;
+  --mf-teal: #008f94;
+}
+
+.mf-page { max-width: 1080px; padding: 8px 0 56px; color: var(--mf-ink); }
+.mf-breadcrumb { color: var(--mf-teal); font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.mf-page-title-row { align-items: flex-start; border-bottom: 1px solid var(--mf-line); display: flex; justify-content: space-between; padding-bottom: 19px; }
+.mf-page-title-row h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.035em; line-height: 1.16; margin: 0; }
+.mf-page-title-row p { color: var(--mf-copy); font-size: 14px; line-height: 1.55; margin: 7px 0 0; max-width: 610px; }
+.mf-status { background: #e8f6f4; color: #087c78; font-size: 11px; font-weight: 700; letter-spacing: .04em; padding: 5px 8px; text-transform: uppercase; }
+.mf-tabs { border-bottom: 1px solid var(--mf-line); display: flex; gap: 25px; overflow-x: auto; }
+.mf-tabs button { border-bottom: 2px solid transparent; color: #52647d; font-size: 14px; margin-bottom: -1px; padding: 15px 0 12px; white-space: nowrap; }
+.mf-tabs button:hover { color: var(--mf-ink); }
+.mf-tabs button.is-active { border-color: var(--mf-navy); color: var(--mf-navy); font-weight: 650; }
+.mf-section-stack { display: grid; gap: 38px; padding-top: 30px; }
+.mf-section-stack h2 { color: var(--mf-ink); font-size: 20px; font-weight: 700; letter-spacing: -.02em; margin: 0; }
+.mf-section-copy { color: var(--mf-copy); font-size: 14px; line-height: 1.55; margin: 7px 0 18px; }
+.mf-section-heading { align-items: start; display: flex; gap: 16px; justify-content: space-between; }
+.mf-button { background: var(--mf-navy); color: #fff; font-size: 13px; font-weight: 650; padding: 8px 12px; white-space: nowrap; }
+.mf-button:hover { background: #001746; }
+.mf-table-wrap { border-top: 1px solid var(--mf-line); overflow-x: auto; }
+.mf-table { border-collapse: collapse; font-size: 13px; min-width: 640px; width: 100%; }
+.mf-table th { color: #6b7c93; font-size: 11px; font-weight: 700; padding: 11px 8px; text-align: left; text-transform: uppercase; }
+.mf-table td { border-top: 1px solid #e6edf5; color: var(--mf-copy); padding: 14px 8px; }
+.mf-strong { color: var(--mf-ink); font-weight: 650; margin: 0; }
+.mf-muted { color: #6b7c93; }
+.mf-link { color: var(--mf-navy); font-size: 13px; font-weight: 600; }
+.mf-link:hover { text-decoration: underline; }
+.mf-empty-row { align-items: flex-start; border-top: 1px solid var(--mf-line); border-bottom: 1px solid var(--mf-line); color: var(--mf-copy); display: flex; gap: 13px; padding: 19px 8px; }
+.mf-empty-row p:last-child, .mf-doc-row p:last-child { font-size: 13px; line-height: 1.5; margin: 4px 0 0; }
+.mf-empty-icon { align-items: center; background: var(--mf-soft); color: var(--mf-navy); display: flex; height: 30px; justify-content: center; width: 30px; }
+.mf-empty-icon svg { height: 16px; width: 16px; }
+.mf-notice { align-items: flex-start; background: var(--mf-soft); border-left: 3px solid var(--mf-teal); color: var(--mf-copy); display: flex; font-size: 13px; gap: 10px; line-height: 1.55; padding: 14px 16px; }
+.mf-notice svg { color: var(--mf-teal); flex: none; margin-top: 2px; }
+.mf-notice p { margin: 0; }
+.mf-doc-list { border-top: 1px solid var(--mf-line); }
+.mf-doc-row { align-items: center; border-bottom: 1px solid var(--mf-line); color: var(--mf-navy); display: grid; gap: 12px; grid-template-columns: 18px 1fr 18px; padding: 14px 8px; }
+.mf-doc-row > span { color: var(--mf-navy); }
+@media (max-width: 640px) { .mf-page-title-row h1 { font-size: 27px; } .mf-page-title-row { gap: 12px; } .mf-section-heading { align-items: stretch; flex-direction: column; } .mf-button { align-self: flex-start; } }
+
 /* Button compressed active-state feedback */
 .btn-press-active {
   transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms ease;

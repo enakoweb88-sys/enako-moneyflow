@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   BookOpen,
-  Code2,
-  Copy,
   ExternalLink,
   KeyRound,
   Radio,
@@ -26,6 +24,14 @@ const mapTab = (page: string): DeveloperTab => {
   return "overview";
 };
 
+const tabLabels: Array<{ id: DeveloperTab; label: string }> = [
+  { id: "overview", label: "Overview" },
+  { id: "keys", label: "API keys" },
+  { id: "webhooks", label: "Webhooks" },
+  { id: "logs", label: "Events & logs" },
+  { id: "docs", label: "Documentation" },
+];
+
 export const CustomerDevelopersPage: React.FC<CustomerDevelopersPageProps> = ({
   initialSubPage = "overview",
 }) => {
@@ -33,184 +39,223 @@ export const CustomerDevelopersPage: React.FC<CustomerDevelopersPageProps> = ({
   const [activeTab, setActiveTab] = useState<DeveloperTab>(() =>
     mapTab(initialSubPage),
   );
-  const [copied, setCopied] = useState(false);
-  const apiUrl =
-    process.env.NEXT_PUBLIC_MONEYFLOW_API_URL ||
-    "API address is not configured";
-  const callbackUrl = useMemo(
-    () =>
-      `${typeof window === "undefined" ? "https://your-domain.example" : window.location.origin}/webhooks/moneyflow`,
-    [],
-  );
-
-  const copyCallbackUrl = async () => {
-    await navigator.clipboard.writeText(callbackUrl);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1500);
-  };
-
-  const tabs: Array<{ id: DeveloperTab; label: string }> = [
-    { id: "overview", label: "Overview" },
-    { id: "keys", label: "API keys" },
-    { id: "webhooks", label: "Webhooks" },
-    { id: "logs", label: "Request logs" },
-    { id: "docs", label: "Documentation" },
-  ];
+  const apiUrl = process.env.NEXT_PUBLIC_MONEYFLOW_API_URL || "Not configured";
 
   return (
-    <section className="mx-auto max-w-6xl pb-12">
-      <header className="border-b border-slate-200 pb-5">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#008f94]">
-          Customer workspace
-        </p>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-          API & developers
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-          Connect your own business systems to MoneyFlow. Credentials, webhook
-          registration and request history will appear here once these services
-          are enabled for your account.
-        </p>
-        <nav className="mt-5 flex gap-4 overflow-x-auto text-sm font-medium">
-          {tabs.map((tab) => (
-            <button
-              className={`shrink-0 border-b-2 pb-2 transition-colors ${activeTab === tab.id ? "border-[#001f5b] text-[#001f5b]" : "border-transparent text-slate-500 hover:text-slate-900"}`}
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              type="button"
-            >
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-      </header>
+    <section className="mf-page">
+      <div className="mf-breadcrumb">Settings</div>
+      <div className="mf-page-title-row">
+        <div>
+          <h1>Developers</h1>
+          <p>Configure how your organisation connects to E‑NAKO MoneyFlow.</p>
+        </div>
+        <span className="mf-status">Sandbox</span>
+      </div>
+
+      <nav className="mf-tabs" aria-label="Developer sections">
+        {tabLabels.map((tab) => (
+          <button
+            className={activeTab === tab.id ? "is-active" : ""}
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            type="button"
+          >
+            {tab.label}
+          </button>
+        ))}
+      </nav>
 
       {activeTab === "overview" && (
-        <div className="grid gap-5 pt-6 lg:grid-cols-[1.5fr_1fr]">
-          <div className="border border-slate-200 bg-white p-6 shadow-sm">
-            <Code2 className="h-6 w-6 text-[#001f5b]" />
-            <h2 className="mt-4 text-lg font-bold text-slate-950">
-              Build against MoneyFlow
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Your developer account is ready for API access. No live API key
-              has been issued and no requests have been recorded yet.
+        <div className="mf-section-stack">
+          <section>
+            <h2>API policies</h2>
+            <p className="mf-section-copy">
+              Policies define the controls that apply to requests made through
+              your organisation’s API credentials.
             </p>
-            <div className="mt-5 rounded border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                API base URL
-              </p>
-              <code className="mt-2 block break-all text-sm text-slate-900">
-                {apiUrl}
-              </code>
+            <div className="mf-table-wrap">
+              <table className="mf-table">
+                <thead>
+                  <tr>
+                    <th>Policy</th>
+                    <th>Description</th>
+                    <th>Status</th>
+                    <th aria-label="Actions" />
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="mf-strong">Customer API access</td>
+                    <td>
+                      API access is requested and reviewed before keys are
+                      issued.
+                    </td>
+                    <td>
+                      <span className="mf-muted">Not enabled</span>
+                    </td>
+                    <td>
+                      <button className="mf-link" type="button">
+                        Request access
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
-          </div>
-          <div className="border border-slate-200 bg-white p-6 shadow-sm">
-            <ShieldCheck className="h-6 w-6 text-[#008f94]" />
-            <h2 className="mt-4 text-lg font-bold text-slate-950">
-              Security first
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Keep secret keys on your server only. Never place them in a
-              website, mobile app, email, or source-code repository.
+          </section>
+          <section>
+            <h2>API keys</h2>
+            <p className="mf-section-copy">
+              API keys authenticate requests to E‑NAKO MoneyFlow. Secret keys
+              are shown once and must remain on your server.
             </p>
-          </div>
+            <EmptyRow
+              icon={<KeyRound />}
+              title="No API keys have been issued"
+              description="Request access to create a live or sandbox integration."
+            />
+          </section>
         </div>
       )}
 
       {activeTab === "keys" && (
-        <div className="pt-6">
-          <EmptyState
-            icon={<KeyRound className="h-6 w-6" />}
-            title="No API keys have been issued"
-            description="API-key issuance is not connected to the live service yet. When it is enabled, you will be able to create, rotate and revoke keys here."
-          />
+        <div className="mf-section-stack">
+          <section>
+            <div className="mf-section-heading">
+              <div>
+                <h2>API keys</h2>
+                <p className="mf-section-copy">
+                  Create, rotate and revoke keys for your own MoneyFlow
+                  integration.
+                </p>
+              </div>
+              <button className="mf-button" type="button">
+                Request access
+              </button>
+            </div>
+            <EmptyRow
+              icon={<KeyRound />}
+              title="No credentials available"
+              description="Keys will appear here after API access has been approved."
+            />
+          </section>
+          <section className="mf-notice">
+            <ShieldCheck className="h-4 w-4" />
+            <p>
+              <strong>Protect your secret key.</strong> It must never be
+              included in browser code, a mobile application, an email, or a
+              source-code repository.
+            </p>
+          </section>
         </div>
       )}
 
       {activeTab === "webhooks" && (
-        <div className="grid gap-5 pt-6 lg:grid-cols-2">
-          <div className="border border-slate-200 bg-white p-6 shadow-sm">
-            <Radio className="h-6 w-6 text-[#001f5b]" />
-            <h2 className="mt-4 text-lg font-bold text-slate-950">
-              Webhook delivery
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              You do not have webhook endpoints registered. This section will
-              display your configured endpoints and their delivery status.
-            </p>
-          </div>
-          <div className="border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Example callback address
-            </p>
-            <code className="mt-3 block break-all rounded bg-slate-50 p-3 text-xs text-slate-800">
-              {callbackUrl}
-            </code>
-            <button
-              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[#001f5b] hover:underline"
-              onClick={() => void copyCallbackUrl()}
-              type="button"
-            >
-              <Copy className="h-4 w-4" />
-              {copied ? "Copied" : "Copy example"}
-            </button>
-          </div>
+        <div className="mf-section-stack">
+          <section>
+            <div className="mf-section-heading">
+              <div>
+                <h2>Webhook endpoints</h2>
+                <p className="mf-section-copy">
+                  Receive signed notifications about events relating to your
+                  organisation.
+                </p>
+              </div>
+              <button className="mf-button" type="button">
+                Add endpoint
+              </button>
+            </div>
+            <EmptyRow
+              icon={<Radio />}
+              title="No webhook endpoints"
+              description="Endpoints will be listed here after they are registered and verified."
+            />
+          </section>
         </div>
       )}
 
       {activeTab === "logs" && (
-        <div className="pt-6">
-          <EmptyState
-            icon={<Radio className="h-6 w-6" />}
-            title="No API requests yet"
-            description="Once your account has a live key and your integration makes requests, this page will show only your own request history."
-          />
+        <div className="mf-section-stack">
+          <section>
+            <h2>Events & request logs</h2>
+            <p className="mf-section-copy">
+              Monitor only your organisation’s integration events and API
+              requests.
+            </p>
+            <EmptyRow
+              icon={<Radio />}
+              title="No activity to show"
+              description="Request delivery and API events will appear after an integration is active."
+            />
+          </section>
         </div>
       )}
 
       {activeTab === "docs" && (
-        <div className="grid gap-5 pt-6 lg:grid-cols-2">
-          <div className="border border-slate-200 bg-white p-6 shadow-sm">
-            <BookOpen className="h-6 w-6 text-[#001f5b]" />
-            <h2 className="mt-4 text-lg font-bold text-slate-950">
-              Integration guide
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Documentation will be published with the live API contract. It
-              will cover authentication, payouts, webhooks and error handling.
+        <div className="mf-section-stack">
+          <section>
+            <h2>Developer documentation</h2>
+            <p className="mf-section-copy">
+              The developer portal will publish the E‑NAKO API contract,
+              authentication requirements, idempotency rules and webhook
+              verification guide.
             </p>
-          </div>
-          <div className="border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-bold text-slate-950">Signed in as</p>
-            <p className="mt-2 text-sm text-slate-600">
-              {user.email || "Your account"}
+            <div className="mf-doc-list">
+              <DocRow
+                icon={<BookOpen />}
+                label="API reference"
+                detail={`Base URL: ${apiUrl}`}
+              />
+              <DocRow
+                icon={<ShieldCheck />}
+                label="Authentication and key safety"
+                detail="How to store and rotate credentials safely."
+              />
+              <DocRow
+                icon={<Radio />}
+                label="Webhook verification"
+                detail="How to verify signed event deliveries."
+              />
+            </div>
+          </section>
+          <section className="mf-notice">
+            <ExternalLink className="h-4 w-4" />
+            <p>
+              Need an integration enabled? Contact us from the Support section
+              using <strong>{user.email || "your verified account"}</strong>.
             </p>
-            <a
-              className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-[#001f5b] hover:underline"
-              href="mailto:enakomgt@gmail.com?subject=MoneyFlow%20API%20access"
-            >
-              Request API access <ExternalLink className="h-4 w-4" />
-            </a>
-          </div>
+          </section>
         </div>
       )}
     </section>
   );
 };
 
-const EmptyState: React.FC<{
+const EmptyRow: React.FC<{
   icon: React.ReactNode;
   title: string;
   description: string;
 }> = ({ icon, title, description }) => (
-  <div className="border border-slate-200 bg-white px-6 py-14 text-center shadow-sm">
-    <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-[#001f5b]">
-      {icon}
+  <div className="mf-empty-row">
+    <span className="mf-empty-icon">{icon}</span>
+    <div>
+      <p className="mf-strong">{title}</p>
+      <p>{description}</p>
     </div>
-    <h2 className="mt-4 text-lg font-bold text-slate-950">{title}</h2>
-    <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-600">
-      {description}
-    </p>
+  </div>
+);
+
+const DocRow: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  detail: string;
+}> = ({ icon, label, detail }) => (
+  <div className="mf-doc-row">
+    <span>{icon}</span>
+    <div>
+      <p className="mf-strong">{label}</p>
+      <p>{detail}</p>
+    </div>
+    <ExternalLink className="h-4 w-4 text-slate-400" />
   </div>
 );
