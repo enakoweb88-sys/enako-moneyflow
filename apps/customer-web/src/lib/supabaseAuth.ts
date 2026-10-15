@@ -58,6 +58,38 @@ export const saveSession = (session: AuthSession) =>
 export const clearSession = () => localStorage.removeItem(storageKey);
 
 export const restoreSession = async (): Promise<AuthSession | null> => {
+  const callbackParams = new URLSearchParams(window.location.hash.slice(1));
+  const callbackAccessToken = callbackParams.get("access_token");
+  const callbackRefreshToken = callbackParams.get("refresh_token");
+  const callbackExpiresIn = Number(callbackParams.get("expires_in") || 0);
+  if (callbackAccessToken && callbackRefreshToken && callbackExpiresIn) {
+    const [, payload = ""] = callbackAccessToken.split(".");
+    try {
+      const decoded = JSON.parse(
+        atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
+      ) as {
+        sub?: string;
+        email?: string;
+      };
+      if (decoded.sub) {
+        const session = {
+          accessToken: callbackAccessToken,
+          refreshToken: callbackRefreshToken,
+          expiresAt: Date.now() + callbackExpiresIn * 1000,
+          user: { id: decoded.sub, email: decoded.email },
+        };
+        saveSession(session);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
+        return session;
+      }
+    } catch {
+      // An invalid callback is treated as no session and will not be persisted.
+    }
+  }
   const raw = localStorage.getItem(storageKey);
   if (!raw) return null;
   try {
@@ -86,9 +118,21 @@ export const signInWithPassword = async (email: string, password: string) => {
 };
 
 export const signUpWithPassword = async (email: string, password: string) => {
-  const payload = await request("signup", { email, password });
+  const payload = await request("signup", {
+    email,
+    password,
+    options: { emailRedirectTo: window.location.origin },
+  });
   if (!payload.access_token) return null;
   const session = sessionFromResponse(payload);
   saveSession(session);
   return session;
+};
+
+export const resendConfirmationEmail = async (email: string) => {
+  await request("resend", {
+    type: "signup",
+    email,
+    options: { emailRedirectTo: window.location.origin },
+  });
 };

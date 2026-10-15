@@ -10,7 +10,7 @@ import { useCustomer } from "@/mock/CustomerContext";
 import { LandingPage } from "@/components/pages/LandingPage";
 import { RegisterPage } from "@/components/pages/RegisterPage";
 import { LoginPage } from "@/components/pages/LoginPage";
-import { MfaPage } from "@/components/pages/MfaPage";
+import { ConfirmEmailPage } from "@/components/pages/ConfirmEmailPage";
 import { DashboardPage } from "@/components/pages/DashboardPage";
 import { BuyXafPage } from "@/components/pages/BuyXafPage";
 import { WalletPage } from "@/components/pages/WalletPage";
@@ -21,6 +21,8 @@ import { SecurityPage } from "@/components/pages/SecurityPage";
 import { NotificationsPage } from "@/components/pages/NotificationsPage";
 import { SupportPage } from "@/components/pages/SupportPage";
 import { CustomerDevelopersPage } from "@/components/pages/CustomerDevelopersPage";
+import { CustomerAnalyticsPage } from "@/components/pages/CustomerAnalyticsPage";
+import { DisputesPage } from "@/components/pages/DisputesPage";
 
 export default function Home() {
   const { isLoggedIn, authLoading, activeNav, setActiveNav } = useCustomer();
@@ -34,7 +36,8 @@ export default function Home() {
 
   // Unauthenticated pages (Landing, Register, Login, MFA)
   const isAuthPage =
-    !isLoggedIn || ["landing", "register", "login", "mfa"].includes(activeNav);
+    !isLoggedIn ||
+    ["landing", "register", "login", "confirm-email"].includes(activeNav);
 
   const renderContent = () => {
     // If not logged in or on an auth page
@@ -44,8 +47,8 @@ export default function Home() {
           return <RegisterPage />;
         case "login":
           return <LoginPage />;
-        case "mfa":
-          return <MfaPage />;
+        case "confirm-email":
+          return <ConfirmEmailPage />;
         case "landing":
         default:
           return <LandingPage />;
@@ -62,6 +65,8 @@ export default function Home() {
         return <BuyXafPage />;
       case "wallet":
         return <WalletPage />;
+      case "analytics":
+        return <CustomerAnalyticsPage />;
       case "send-withdraw":
         return <SendWithdrawPage />;
       case "beneficiaries":
@@ -74,6 +79,8 @@ export default function Home() {
         return <NotificationsPage />;
       case "support":
         return <SupportPage />;
+      case "disputes":
+        return <DisputesPage />;
       case "dashboard":
       default:
         return <DashboardPage />;
@@ -86,7 +93,10 @@ export default function Home() {
   }
 
   // Logged-out auth pages (Register, Login, MFA): Clean layout with CustomerHeader
-  if (!isLoggedIn || ["register", "login", "mfa"].includes(activeNav)) {
+  if (
+    !isLoggedIn ||
+    ["register", "login", "confirm-email"].includes(activeNav)
+  ) {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
         <CustomerHeader />
@@ -101,12 +111,14 @@ export default function Home() {
   const mobileNavTabs = [
     { id: "dashboard", label: "Dashboard" },
     { id: "wallet", label: "Wallet" },
+    { id: "analytics", label: "Analytics" },
     { id: "send-withdraw", label: "Send & Withdraw" },
     { id: "beneficiaries", label: "Beneficiaries" },
     { id: "profile-kyc", label: "KYC" },
     { id: "security", label: "Security" },
     { id: "notifications", label: "Notices" },
     { id: "support", label: "Support" },
+    { id: "disputes", label: "Disputes" },
     { id: "developers", label: "API" },
   ];
 

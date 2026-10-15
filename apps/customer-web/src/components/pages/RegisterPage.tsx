@@ -80,7 +80,7 @@ export const RegisterPage: React.FC = () => {
         toast.success(
           "Check your email to confirm your account, then sign in.",
         );
-        setActiveNav("login");
+        setActiveNav("confirm-email");
       }
     } catch (error) {
       toast.error(

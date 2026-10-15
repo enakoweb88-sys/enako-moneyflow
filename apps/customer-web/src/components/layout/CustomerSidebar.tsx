@@ -3,12 +3,14 @@
 import React from "react";
 import {
   Bell,
+  BarChart3,
   CircleHelp,
   Code2,
   LayoutDashboard,
   Lock,
   Send,
   ShieldCheck,
+  MessageSquareWarning,
   Users,
   Wallet,
 } from "lucide-react";
@@ -22,11 +24,17 @@ export const CustomerSidebar: React.FC = () => {
   const items = [
     { id: "dashboard", label: "Home", icon: LayoutDashboard },
     { id: "wallet", label: "Wallet & statements", icon: Wallet },
+    { id: "analytics", label: "Activity & analytics", icon: BarChart3 },
     { id: "send-withdraw", label: "Send & withdraw", icon: Send },
     { id: "beneficiaries", label: "Beneficiaries", icon: Users },
     { id: "profile-kyc", label: "Profile & verification", icon: ShieldCheck },
     { id: "security", label: "Security", icon: Lock },
     { id: "notifications", label: "Notifications", icon: Bell, count: unread },
+    {
+      id: "disputes",
+      label: "Transaction disputes",
+      icon: MessageSquareWarning,
+    },
     { id: "support", label: "Support", icon: CircleHelp },
     { id: "developers", label: "API & developers", icon: Code2 },
   ];

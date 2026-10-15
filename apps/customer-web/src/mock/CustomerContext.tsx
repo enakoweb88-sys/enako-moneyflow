@@ -20,6 +20,7 @@ import {
 } from "./customerData";
 import {
   clearSession,
+  resendConfirmationEmail,
   restoreSession,
   signInWithPassword,
   signUpWithPassword,
@@ -35,6 +36,8 @@ interface CustomerContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string) => Promise<boolean>;
   signOut: () => void;
+  pendingConfirmationEmail: string;
+  resendConfirmation: () => Promise<void>;
   activeNav: string;
   setActiveNav: (nav: string) => void;
   language: "EN" | "FR";
@@ -83,6 +86,7 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [pendingConfirmationEmail, setPendingConfirmationEmail] = useState("");
   const [activeNav, setActiveNav] = useState("landing");
   const [language, setLanguage] = useState<"EN" | "FR">("EN");
   const [environment, setEnvironment] =
@@ -140,11 +144,22 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
   };
   const signUp = async (email: string, password: string) => {
     const session = await signUpWithPassword(email, password);
-    if (!session) return false;
+    if (!session) {
+      setPendingConfirmationEmail(email);
+      return false;
+    }
     setIsLoggedIn(true);
     setActiveNav("dashboard");
     setShowOnboarding(true);
     return true;
+  };
+  const resendConfirmation = async () => {
+    if (!pendingConfirmationEmail) {
+      throw new Error(
+        "Enter your email again so we know where to send the confirmation link.",
+      );
+    }
+    await resendConfirmationEmail(pendingConfirmationEmail);
   };
   const signOut = () => {
     clearSession();
@@ -211,6 +226,8 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
         signIn,
         signUp,
         signOut,
+        pendingConfirmationEmail,
+        resendConfirmation,
         activeNav,
         setActiveNav,
         language,
