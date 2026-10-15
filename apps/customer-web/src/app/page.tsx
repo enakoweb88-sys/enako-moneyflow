@@ -3,6 +3,7 @@
 import React from "react";
 import { CustomerHeader } from "@/components/layout/CustomerHeader";
 import { CustomerSidebar } from "@/components/layout/CustomerSidebar";
+import { CustomerOnboarding } from "@/components/common/CustomerOnboarding";
 import { useCustomer } from "@/mock/CustomerContext";
 
 // Page Components
@@ -19,7 +20,6 @@ import { ProfileKycPage } from "@/components/pages/ProfileKycPage";
 import { SecurityPage } from "@/components/pages/SecurityPage";
 import { NotificationsPage } from "@/components/pages/NotificationsPage";
 import { SupportPage } from "@/components/pages/SupportPage";
-import { CustomerDevelopersPage } from "@/components/pages/CustomerDevelopersPage";
 
 export default function Home() {
   const { isLoggedIn, activeNav, setActiveNav } = useCustomer();
@@ -42,10 +42,6 @@ export default function Home() {
         default:
           return <LandingPage />;
       }
-    }
-
-    if (activeNav.startsWith("dev-") || activeNav === "developers") {
-      return <CustomerDevelopersPage initialSubPage={activeNav} />;
     }
 
     // Authenticated application pages
@@ -92,7 +88,6 @@ export default function Home() {
   // Logged-in customer portal layout: Top bar + Sidebar + Main content
   const mobileNavTabs = [
     { id: "dashboard", label: "Dashboard" },
-    { id: "buy-xaf", label: "Buy XAF" },
     { id: "wallet", label: "Wallet" },
     { id: "send-withdraw", label: "Send & Withdraw" },
     { id: "beneficiaries", label: "Beneficiaries" },
@@ -130,6 +125,7 @@ export default function Home() {
           <div className="max-w-7xl mx-auto">{renderContent()}</div>
         </main>
       </div>
+      <CustomerOnboarding />
     </div>
   );
 }

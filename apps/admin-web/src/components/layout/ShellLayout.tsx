@@ -37,7 +37,6 @@ import { useMock } from '@/mock/MockContext'
 import { ALL_ROLES, type UserRole } from '@/mock/data'
 
 // Reusable Chrome & Flow Components
-import { OnboardingWizard } from '@/components/common/OnboardingWizard'
 import { SetupGuide } from '@/components/common/SetupGuide'
 import { CoachMark } from '@/components/common/CoachMark'
 
@@ -82,9 +81,6 @@ export const ShellLayout: React.FC = () => {
   const [showSetupGuide, setShowSetupGuide] = useState<boolean>(false)
   const [showCoachMark, setShowCoachMark] = useState<boolean>(false)
 
-  // First-run Onboarding state (persisted per user)
-  const [showOnboarding, setShowOnboarding] = useState<boolean>(false)
-
   // Top Bar Search & Quick-Create Dialogs
   const [searchOpen, setSearchOpen] = useState<boolean>(false)
   const [searchQuery, setSearchQuery] = useState<string>('')
@@ -118,14 +114,9 @@ export const ShellLayout: React.FC = () => {
     more: false,
   })
 
-  // Check Onboarding & CoachMark on Mount
+  // Check the administrator-only coach mark on mount.
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const onboardingDone = localStorage.getItem('enako_admin_onboarding_done')
-      if (!onboardingDone) {
-        setShowOnboarding(true)
-      }
-
       const coachMarkSeen = localStorage.getItem('enako_coachmark_connect_seen')
       if (!coachMarkSeen && onboardingDone) {
         // Trigger contextual coach mark after onboarding
@@ -719,7 +710,6 @@ export const ShellLayout: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setShowOnboarding(true)
                     setHelpMenuOpen(false)
                   }}
                   className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 flex items-center space-x-2 text-slate-700 cursor-pointer font-medium"
@@ -985,18 +975,6 @@ export const ShellLayout: React.FC = () => {
         onAction={() => setActiveNav('connect')}
         onDismiss={handleDismissCoachMark}
         stepIndicator="Guided Setup · Step 2 of 4"
-      />
-
-      {/* ============================================================ */}
-      {/* 6. SANDBOX-FIRST ONBOARDING WIZARD (6-STEP MODAL)            */}
-      {/* ============================================================ */}
-      <OnboardingWizard
-        isOpen={showOnboarding}
-        onClose={() => setShowOnboarding(false)}
-        onComplete={() => {
-          setShowOnboarding(false)
-          setShowCoachMark(true)
-        }}
       />
 
       {/* ============================================================ */}

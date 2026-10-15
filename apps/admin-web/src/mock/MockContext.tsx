@@ -2,26 +2,9 @@ import React, { createContext, useContext, useState } from 'react'
 import {
   type UserRole,
   type CurrentUser,
-  CURRENT_USER_DEFAULT,
   ROLE_PERMISSIONS,
-  INITIAL_KPIS,
-  INITIAL_URGENT_ITEMS,
-  INITIAL_CUSTOMERS,
-  INITIAL_KYC_QUEUE,
-  INITIAL_REMITTANCES,
-  INITIAL_MANUAL_CREDITS,
-  INITIAL_WITHDRAWALS,
-  INITIAL_APPROVALS,
-  INITIAL_APPROVALS_HISTORY,
-  INITIAL_WALLETS,
-  INITIAL_ACCOUNTS,
-  INITIAL_LEDGER_ENTRIES,
-  INITIAL_FX_RATES,
-  INITIAL_FEE_RULES,
-  INITIAL_RECON_RUNS,
-  INITIAL_AUDIT_LOGS,
-  INITIAL_STAFF_USERS,
-  INITIAL_SYSTEM_SETTINGS,
+  type DashboardKPIs,
+  type UrgentAttentionItem,
   type Customer,
   type KycReviewItem,
   type Remittance,
@@ -39,14 +22,31 @@ import {
 } from './data'
 import { toast } from 'sonner'
 
+const EMPTY_CURRENT_USER: CurrentUser = {
+  id: '',
+  name: 'Administrator',
+  role: 'Administrator',
+  email: '',
+}
+
+const EMPTY_KPIS: DashboardKPIs = {
+  remittanceVolumeToday: 0,
+  withdrawalVolumeToday: 0,
+  feeIncomeMonth: 0,
+  pendingApprovals: 0,
+  openReconciliationItems: 0,
+}
+
+const EMPTY_URGENT_ITEMS: UrgentAttentionItem[] = []
+
 interface MockContextType {
   currentUser: CurrentUser
   setCurrentRole: (role: UserRole) => void
   isNavAllowed: (navId: string) => boolean
 
   // Data collections
-  kpis: typeof INITIAL_KPIS
-  urgentItems: typeof INITIAL_URGENT_ITEMS
+  kpis: DashboardKPIs
+  urgentItems: UrgentAttentionItem[]
   customers: Customer[]
   kycQueue: KycReviewItem[]
   remittances: Remittance[]
@@ -56,7 +56,7 @@ interface MockContextType {
   approvalsHistory: ApprovalItem[]
   wallets: CustomerWalletRecord[]
   accounts: ChartOfAccount[]
-  ledgerEntries: typeof INITIAL_LEDGER_ENTRIES
+  ledgerEntries: Record<string, never[]>
   fxRates: FxRate[]
   feeRules: FeeRule[]
   reconRuns: ReconciliationRun[]
@@ -118,24 +118,23 @@ interface MockContextType {
 const MockContext = createContext<MockContextType | undefined>(undefined)
 
 export const MockProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<CurrentUser>(CURRENT_USER_DEFAULT)
-  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS)
-  const [kycQueue, setKycQueue] = useState<KycReviewItem[]>(INITIAL_KYC_QUEUE)
-  const [remittances, setRemittances] = useState<Remittance[]>(INITIAL_REMITTANCES)
-  const [manualCredits, setManualCredits] = useState<ManualCredit[]>(INITIAL_MANUAL_CREDITS)
-  const [withdrawals] = useState<Withdrawal[]>(INITIAL_WITHDRAWALS)
-  const [approvals, setApprovals] = useState<ApprovalItem[]>(INITIAL_APPROVALS)
-  const [approvalsHistory, setApprovalsHistory] =
-    useState<ApprovalItem[]>(INITIAL_APPROVALS_HISTORY)
-  const [wallets, setWallets] = useState<CustomerWalletRecord[]>(INITIAL_WALLETS)
-  const [accounts] = useState<ChartOfAccount[]>(INITIAL_ACCOUNTS)
-  const [ledgerEntries] = useState(INITIAL_LEDGER_ENTRIES)
-  const [fxRates, setFxRates] = useState<FxRate[]>(INITIAL_FX_RATES)
-  const [feeRules, setFeeRules] = useState<FeeRule[]>(INITIAL_FEE_RULES)
-  const [reconRuns, setReconRuns] = useState<ReconciliationRun[]>(INITIAL_RECON_RUNS)
-  const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>(INITIAL_AUDIT_LOGS)
-  const [staffUsers, setStaffUsers] = useState<StaffUser[]>(INITIAL_STAFF_USERS)
-  const [systemSettings, setSystemSettings] = useState<SystemSetting[]>(INITIAL_SYSTEM_SETTINGS)
+  const [currentUser, setCurrentUser] = useState<CurrentUser>(EMPTY_CURRENT_USER)
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [kycQueue, setKycQueue] = useState<KycReviewItem[]>([])
+  const [remittances, setRemittances] = useState<Remittance[]>([])
+  const [manualCredits, setManualCredits] = useState<ManualCredit[]>([])
+  const [withdrawals] = useState<Withdrawal[]>([])
+  const [approvals, setApprovals] = useState<ApprovalItem[]>([])
+  const [approvalsHistory, setApprovalsHistory] = useState<ApprovalItem[]>([])
+  const [wallets, setWallets] = useState<CustomerWalletRecord[]>([])
+  const [accounts] = useState<ChartOfAccount[]>([])
+  const [ledgerEntries] = useState<Record<string, never[]>>({})
+  const [fxRates, setFxRates] = useState<FxRate[]>([])
+  const [feeRules, setFeeRules] = useState<FeeRule[]>([])
+  const [reconRuns, setReconRuns] = useState<ReconciliationRun[]>([])
+  const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>([])
+  const [staffUsers, setStaffUsers] = useState<StaffUser[]>([])
+  const [systemSettings, setSystemSettings] = useState<SystemSetting[]>([])
 
   const setCurrentRole = (role: UserRole) => {
     setCurrentUser((prev) => ({ ...prev, role }))
@@ -729,8 +728,8 @@ export const MockProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentUser,
         setCurrentRole,
         isNavAllowed,
-        kpis: INITIAL_KPIS,
-        urgentItems: INITIAL_URGENT_ITEMS,
+        kpis: EMPTY_KPIS,
+        urgentItems: EMPTY_URGENT_ITEMS,
         customers,
         kycQueue,
         remittances,

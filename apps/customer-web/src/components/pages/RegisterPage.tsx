@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { UserPlus, ShieldCheck, ArrowRight } from "lucide-react";
 
 export const RegisterPage: React.FC = () => {
-  const { setActiveNav } = useCustomer();
+  const { setActiveNav, setRegistrationDetails } = useCustomer();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -65,6 +65,11 @@ export const RegisterPage: React.FC = () => {
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
+    setRegistrationDetails({
+      name: fullName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+    });
     toast.success("Registration successful. Please verify with MFA code.");
     setActiveNav("mfa");
   };
@@ -98,7 +103,7 @@ export const RegisterPage: React.FC = () => {
                 </label>
                 <Input
                   type="text"
-                  placeholder="e.g. Samuel Eto’o Fosso"
+                  placeholder="Enter your full legal name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="w-full text-xs font-sans border-slate-300 rounded-xl h-10"

@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { ShieldCheck, KeyRound, ArrowRight } from "lucide-react";
 
 export const MfaPage: React.FC = () => {
-  const { setIsLoggedIn, setActiveNav } = useCustomer();
+  const { setIsLoggedIn, setActiveNav, setShowOnboarding } = useCustomer();
 
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [secondsLeft, setSecondsLeft] = useState(45);
@@ -56,6 +56,7 @@ export const MfaPage: React.FC = () => {
     if (!isComplete) return;
     setIsLoggedIn(true);
     setActiveNav("dashboard");
+    setShowOnboarding(true);
     toast.success("MFA verification successful. Welcome back!");
   };
 

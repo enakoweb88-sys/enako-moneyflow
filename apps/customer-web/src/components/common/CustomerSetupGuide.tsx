@@ -45,14 +45,14 @@ export const CustomerSetupGuide: React.FC<CustomerSetupGuideProps> = ({
         {
           id: "step-verify-phone",
           title: "Verify your phone number",
-          completed: true,
+          completed: false,
           actionText: "View profile",
           actionRoute: "profile-kyc",
         },
         {
           id: "step-upload-kyc",
           title: "Upload KYC identity documents",
-          completed: true,
+          completed: false,
           actionText: "View documents",
           actionRoute: "profile-kyc",
         },
