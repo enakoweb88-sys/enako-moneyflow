@@ -4,6 +4,7 @@ import React from "react";
 import {
   Bell,
   CircleHelp,
+  Code2,
   LayoutDashboard,
   Lock,
   Send,
@@ -27,6 +28,7 @@ export const CustomerSidebar: React.FC = () => {
     { id: "security", label: "Security", icon: Lock },
     { id: "notifications", label: "Notifications", icon: Bell, count: unread },
     { id: "support", label: "Support", icon: CircleHelp },
+    { id: "developers", label: "API & developers", icon: Code2 },
   ];
   const initials = (user.name || "New customer")
     .split(" ")

@@ -48,6 +48,7 @@ interface CustomerContextType {
     email: string;
     phone: string;
   }) => void;
+  completeOnboarding: () => Promise<void>;
   user: CustomerUser;
   wallet: CustomerWallet;
   activities: TransactionActivity[];
@@ -164,6 +165,43 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
       phone: details.phone,
     }));
 
+  const completeOnboarding = async () => {
+    const session = await restoreSession();
+    if (!session)
+      throw new Error("Your session has expired. Please sign in again.");
+    const apiUrl = process.env.NEXT_PUBLIC_MONEYFLOW_API_URL;
+    if (!apiUrl)
+      throw new Error("Customer API is not configured for this environment.");
+    const response = await fetch(
+      `${apiUrl.replace(/\/$/, "")}/api/v1/customers/me/onboarding`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          displayName: user.name || session.user.email || "Customer",
+          phoneE164: user.phone || null,
+        }),
+      },
+    );
+    const payload = (await response.json().catch(() => ({}))) as {
+      message?: string;
+      displayName?: string;
+      email?: string;
+    };
+    if (!response.ok)
+      throw new Error(payload.message || "We could not finish account setup.");
+    setUser((current) => ({
+      ...current,
+      name: payload.displayName || current.name,
+      email: payload.email || session.user.email || current.email,
+    }));
+    setShowOnboarding(false);
+    setActiveNav("dashboard");
+  };
+
   return (
     <CustomerContext.Provider
       value={{
@@ -185,6 +223,7 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
         showOnboarding,
         setShowOnboarding,
         setRegistrationDetails,
+        completeOnboarding,
         user,
         wallet,
         activities,

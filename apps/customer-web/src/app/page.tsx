@@ -20,6 +20,7 @@ import { ProfileKycPage } from "@/components/pages/ProfileKycPage";
 import { SecurityPage } from "@/components/pages/SecurityPage";
 import { NotificationsPage } from "@/components/pages/NotificationsPage";
 import { SupportPage } from "@/components/pages/SupportPage";
+import { CustomerDevelopersPage } from "@/components/pages/CustomerDevelopersPage";
 
 export default function Home() {
   const { isLoggedIn, authLoading, activeNav, setActiveNav } = useCustomer();
@@ -49,6 +50,10 @@ export default function Home() {
         default:
           return <LandingPage />;
       }
+    }
+
+    if (activeNav.startsWith("dev-") || activeNav === "developers") {
+      return <CustomerDevelopersPage initialSubPage={activeNav} />;
     }
 
     // Authenticated application pages
@@ -102,6 +107,7 @@ export default function Home() {
     { id: "security", label: "Security" },
     { id: "notifications", label: "Notices" },
     { id: "support", label: "Support" },
+    { id: "developers", label: "API" },
   ];
 
   return (

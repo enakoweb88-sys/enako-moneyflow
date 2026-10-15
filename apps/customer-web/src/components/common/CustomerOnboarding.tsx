@@ -5,15 +5,33 @@ import { ArrowRight, ShieldCheck, UserRound, Wallet } from "lucide-react";
 import { useCustomer } from "@/mock/CustomerContext";
 
 export const CustomerOnboarding: React.FC = () => {
-  const { showOnboarding, setShowOnboarding, setActiveNav, user } =
-    useCustomer();
+  const {
+    showOnboarding,
+    setShowOnboarding,
+    setActiveNav,
+    user,
+    completeOnboarding,
+  } = useCustomer();
   const [step, setStep] = useState(1);
+  const [finishing, setFinishing] = useState(false);
+  const [error, setError] = useState("");
 
   if (!showOnboarding) return null;
 
-  const finish = () => {
-    setShowOnboarding(false);
-    setActiveNav("dashboard");
+  const finish = async () => {
+    setError("");
+    setFinishing(true);
+    try {
+      await completeOnboarding();
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "We could not finish account setup.",
+      );
+    } finally {
+      setFinishing(false);
+    }
   };
 
   const content = [
@@ -46,9 +64,9 @@ export const CustomerOnboarding: React.FC = () => {
   ][step - 1];
   const Icon = content.icon;
 
-  const next = () => {
+  const next = async () => {
     if (content.route) setActiveNav(content.route);
-    if (step === 4) finish();
+    if (step === 4) await finish();
     else setStep((current) => current + 1);
   };
 
@@ -76,10 +94,13 @@ export const CustomerOnboarding: React.FC = () => {
           <p className="mt-3 text-sm leading-6 text-slate-600">
             {content.text}
           </p>
+          {error ? (
+            <p className="mt-3 text-sm font-medium text-rose-700">{error}</p>
+          ) : null}
           <div className="mt-9 flex items-center justify-between gap-4">
             <button
               type="button"
-              onClick={finish}
+              onClick={() => setShowOnboarding(false)}
               className="text-sm font-semibold text-slate-500 hover:text-slate-900"
             >
               Skip for now
@@ -89,7 +110,7 @@ export const CustomerOnboarding: React.FC = () => {
               onClick={next}
               className="inline-flex items-center gap-2 rounded-xl bg-[#001f5b] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#001744]"
             >
-              {content.action}
+              {finishing ? "Saving your account…" : content.action}
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>

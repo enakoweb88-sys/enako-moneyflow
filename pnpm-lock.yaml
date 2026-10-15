@@ -337,6 +337,9 @@ importers:
       "@enako/ui":
         specifier: workspace:*
         version: link:../../packages/ui
+      "@supabase/supabase-js":
+        specifier: 2.57.0
+        version: 2.57.0
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -1574,6 +1577,50 @@ packages:
         integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==,
       }
 
+  "@supabase/auth-js@2.71.1":
+    resolution:
+      {
+        integrity: sha512-mMIQHBRc+SKpZFRB2qtupuzulaUhFYupNyxqDj5Jp/LyPvcWvjaJzZzObv6URtL/O6lPxkanASnotGtNpS3H2Q==,
+      }
+
+  "@supabase/functions-js@2.4.5":
+    resolution:
+      {
+        integrity: sha512-v5GSqb9zbosquTo6gBwIiq7W9eQ7rE5QazsK/ezNiQXdCbY+bH8D9qEaBIkhVvX4ZRW5rP03gEfw5yw9tiq4EQ==,
+      }
+
+  "@supabase/node-fetch@2.6.15":
+    resolution:
+      {
+        integrity: sha512-1ibVeYUacxWYi9i0cf5efil6adJ9WRyZBLivgjs+AUpewx1F3xPi7gLgaASI2SmIQxPoCEjAsLAzKPgMJVgOUQ==,
+      }
+    engines: { node: 4.x || >=6.0.0 }
+
+  "@supabase/postgrest-js@1.21.3":
+    resolution:
+      {
+        integrity: sha512-rg3DmmZQKEVCreXq6Am29hMVe1CzemXyIWVYyyua69y6XubfP+DzGfLxME/1uvdgwqdoaPbtjBDpEBhqxq1ZwA==,
+      }
+
+  "@supabase/realtime-js@2.15.4":
+    resolution:
+      {
+        integrity: sha512-e/FYIWjvQJHOCNACWehnKvg26zosju3694k0NMUNb+JGLdvHJzEa29ZVVLmawd2kvx4hdbv8mxSqfttRnH3+DA==,
+      }
+
+  "@supabase/storage-js@2.117.3":
+    resolution:
+      {
+        integrity: sha512-QhUxFC33Crlw6WDeA4hLADdi1PzjI3c4UJs7ivWHHEnU7ulmCWEZSDaRCuIfmsjUwbHYaIfRNFQNsm+IsGYS6w==,
+      }
+    engines: { node: ">=22.0.0" }
+
+  "@supabase/supabase-js@2.57.0":
+    resolution:
+      {
+        integrity: sha512-h9ttcL0MY4h+cGqZl95F/RuqccuRBjHU9B7Qqvw0Da+pPK2sUlU1/UdvyqUGj37UsnSphr9pdGfeXjesYkBcyA==,
+      }
+
   "@swc/helpers@0.5.23":
     resolution:
       {
@@ -1835,6 +1882,12 @@ packages:
         integrity: sha512-aS3/DG0oM05K0RIXXP+hKjinGG5IgSSVGzswZxW3O0sS3pH4/fycXundUC9XsszgKCk4gHXylTEK6hyFxVxnoQ==,
       }
 
+  "@types/phoenix@1.6.7":
+    resolution:
+      {
+        integrity: sha512-oN9ive//QSBkf19rfDv45M7eZPi0eEXylht2OLEXicu5b4KoQ1OzXIw+xDSGWxSxe1JmepRR/ZH283vsu518/Q==,
+      }
+
   "@types/react-dom@19.3.0":
     resolution:
       {
@@ -1847,6 +1900,12 @@ packages:
     resolution:
       {
         integrity: sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==,
+      }
+
+  "@types/ws@8.18.2":
+    resolution:
+      {
+        integrity: sha512-67MQl+fpWKVTT1NYdnmo3U4sc/xPo/zQBncVnI74qmQa0z/b+1g6iYqNmGCPbxO+zz2aklb08a0oHfegiVd0/w==,
       }
 
   "@typescript-eslint/eslint-plugin@7.18.0":
@@ -3659,6 +3718,13 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  iceberg-js@0.8.1:
+    resolution:
+      {
+        integrity: sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==,
+      }
+    engines: { node: ">=20.0.0" }
 
   ignore@5.3.2:
     resolution:
@@ -5493,6 +5559,12 @@ packages:
       }
     engines: { node: ">=8.0" }
 
+  tr46@0.0.3:
+    resolution:
+      {
+        integrity: sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==,
+      }
+
   ts-api-utils@1.4.3:
     resolution:
       {
@@ -5712,6 +5784,18 @@ packages:
       yaml:
         optional: true
 
+  webidl-conversions@3.0.1:
+    resolution:
+      {
+        integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==,
+      }
+
+  whatwg-url@5.0.0:
+    resolution:
+      {
+        integrity: sha512-saE57nupxk6v3HY35+jzBwYa0rKSy0XR8JSxZPwgLr7ys0IBzhGviA1/TUGJLmSVqs8pb9AnvICXEuOHLprYTw==,
+      }
+
   which-boxed-primitive@1.1.1:
     resolution:
       {
@@ -5774,6 +5858,21 @@ packages:
       {
         integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==,
       }
+
+  ws@8.22.0:
+    resolution:
+      {
+        integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==,
+      }
+    engines: { node: ">=10.0.0" }
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: ">=5.0.2"
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
 
   y18n@5.0.8:
     resolution:
@@ -6491,6 +6590,49 @@ snapshots:
 
   "@standard-schema/utils@0.3.0": {}
 
+  "@supabase/auth-js@2.71.1":
+    dependencies:
+      "@supabase/node-fetch": 2.6.15
+
+  "@supabase/functions-js@2.4.5":
+    dependencies:
+      "@supabase/node-fetch": 2.6.15
+
+  "@supabase/node-fetch@2.6.15":
+    dependencies:
+      whatwg-url: 5.0.0
+
+  "@supabase/postgrest-js@1.21.3":
+    dependencies:
+      "@supabase/node-fetch": 2.6.15
+
+  "@supabase/realtime-js@2.15.4":
+    dependencies:
+      "@supabase/node-fetch": 2.6.15
+      "@types/phoenix": 1.6.7
+      "@types/ws": 8.18.2
+      ws: 8.22.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
+  "@supabase/storage-js@2.117.3":
+    dependencies:
+      iceberg-js: 0.8.1
+      tslib: 2.8.1
+
+  "@supabase/supabase-js@2.57.0":
+    dependencies:
+      "@supabase/auth-js": 2.71.1
+      "@supabase/functions-js": 2.4.5
+      "@supabase/node-fetch": 2.6.15
+      "@supabase/postgrest-js": 1.21.3
+      "@supabase/realtime-js": 2.15.4
+      "@supabase/storage-js": 2.117.3
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   "@swc/helpers@0.5.23":
     dependencies:
       tslib: 2.8.1
@@ -6621,6 +6763,8 @@ snapshots:
     dependencies:
       undici-types: 7.24.6
 
+  "@types/phoenix@1.6.7": {}
+
   "@types/react-dom@19.3.0(@types/react@19.3.0)":
     dependencies:
       "@types/react": 19.3.0
@@ -6628,6 +6772,10 @@ snapshots:
   "@types/react@19.3.0":
     dependencies:
       csstype: 3.2.3
+
+  "@types/ws@8.18.2":
+    dependencies:
+      "@types/node": 20.19.43
 
   "@typescript-eslint/eslint-plugin@7.18.0(@typescript-eslint/parser@7.18.0(eslint@8.57.1(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3))(eslint@8.57.1(supports-color@10.2.2))(supports-color@10.2.2)(typescript@6.0.3)":
     dependencies:
@@ -7963,6 +8111,8 @@ snapshots:
     optionalDependencies:
       typescript: 6.0.3
 
+  iceberg-js@0.8.1: {}
+
   ignore@5.3.2: {}
 
   ignore@7.0.11: {}
@@ -9017,6 +9167,8 @@ snapshots:
     dependencies:
       is-number: 7.0.0
 
+  tr46@0.0.3: {}
+
   ts-api-utils@1.4.3(typescript@6.0.3):
     dependencies:
       typescript: 6.0.3
@@ -9167,6 +9319,13 @@ snapshots:
       jiti: 2.7.0
       yaml: 2.9.1
 
+  webidl-conversions@3.0.1: {}
+
+  whatwg-url@5.0.0:
+    dependencies:
+      tr46: 0.0.3
+      webidl-conversions: 3.0.1
+
   which-boxed-primitive@1.1.1:
     dependencies:
       is-bigint: 1.1.0
@@ -9227,6 +9386,8 @@ snapshots:
       strip-ansi: 7.2.0
 
   wrappy@1.0.2: {}
+
+  ws@8.22.0: {}
 
   y18n@5.0.8: {}
 

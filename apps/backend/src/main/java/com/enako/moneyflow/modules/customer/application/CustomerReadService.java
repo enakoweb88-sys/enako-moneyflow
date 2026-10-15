@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
@@ -39,6 +40,33 @@ public class CustomerReadService {
                     resultSet.getString("status")
                 );
             });
+    }
+
+    @Transactional
+    public CustomerProfile createCustomerProfile(UUID profileId, String email, String displayName, String phoneE164) {
+        var parameters = new MapSqlParameterSource()
+            .addValue("profileId", profileId)
+            .addValue("email", email)
+            .addValue("displayName", displayName.trim())
+            .addValue("phoneE164", phoneE164 == null || phoneE164.isBlank() ? null : phoneE164.trim());
+
+        jdbc.update("""
+            INSERT INTO profiles (id, email, display_name, phone_e164)
+            VALUES (:profileId, :email, :displayName, :phoneE164)
+            ON CONFLICT (id) DO UPDATE
+            SET email = EXCLUDED.email,
+                display_name = EXCLUDED.display_name,
+                phone_e164 = COALESCE(EXCLUDED.phone_e164, profiles.phone_e164),
+                updated_at = CURRENT_TIMESTAMP
+            """, parameters);
+
+        jdbc.update("""
+            INSERT INTO customers (profile_id, customer_number)
+            VALUES (:profileId, :customerNumber)
+            ON CONFLICT (profile_id) DO NOTHING
+            """, parameters.addValue("customerNumber", "CUS-" + profileId.toString().replace("-", "").toUpperCase()));
+
+        return customerProfile(profileId);
     }
 
     public record CustomerProfile(
