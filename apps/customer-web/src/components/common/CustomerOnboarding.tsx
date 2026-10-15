@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  ArrowRight,
-  CheckCircle2,
-  ShieldCheck,
-  UserRound,
-  Wallet,
-} from "lucide-react";
+import { ArrowRight, ShieldCheck, UserRound, Wallet } from "lucide-react";
 import { useCustomer } from "@/mock/CustomerContext";
 
 export const CustomerOnboarding: React.FC = () => {
