@@ -15,18 +15,26 @@ import { toast } from "sonner";
 import { ShieldCheck, Lock, Mail, ArrowRight } from "lucide-react";
 
 export const LoginPage: React.FC = () => {
-  const { setActiveNav } = useCustomer();
+  const { setActiveNav, signIn } = useCustomer();
 
-  const [email, setEmail] = useState("s.fosso@enako-group.cm");
-  const [password, setPassword] = useState("••••••••••••");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email) return;
-    toast.success(
-      "Credentials verified. Please enter your MFA authentication code.",
-    );
-    setActiveNav("mfa");
+    if (!email || !password) return;
+    setSubmitting(true);
+    try {
+      await signIn(email, password);
+      toast.success("Signed in successfully.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Unable to sign in.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -96,7 +104,7 @@ export const LoginPage: React.FC = () => {
                   type="submit"
                   className="w-full font-bold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl h-11 shadow-xs"
                 >
-                  Continue to Verification{" "}
+                  {submitting ? "Signing in…" : "Sign in"}{" "}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>

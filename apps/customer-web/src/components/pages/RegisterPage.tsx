@@ -15,13 +15,14 @@ import { toast } from "sonner";
 import { UserPlus, ShieldCheck, ArrowRight } from "lucide-react";
 
 export const RegisterPage: React.FC = () => {
-  const { setActiveNav, setRegistrationDetails } = useCustomer();
+  const { setActiveNav, setRegistrationDetails, signUp } = useCustomer();
 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   // Calculate Password Strength
   const getPasswordStrength = (pwd: string) => {
@@ -62,7 +63,7 @@ export const RegisterPage: React.FC = () => {
     password.length >= 6 &&
     password === confirmPassword;
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
     setRegistrationDetails({
@@ -70,8 +71,26 @@ export const RegisterPage: React.FC = () => {
       email: email.trim(),
       phone: phone.trim(),
     });
-    toast.success("Registration successful. Please verify with MFA code.");
-    setActiveNav("mfa");
+    setSubmitting(true);
+    try {
+      const signedIn = await signUp(email.trim(), password);
+      if (signedIn)
+        toast.success("Account created. Continue with customer onboarding.");
+      else {
+        toast.success(
+          "Check your email to confirm your account, then sign in.",
+        );
+        setActiveNav("login");
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to create your account.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -190,10 +209,11 @@ export const RegisterPage: React.FC = () => {
                   variant="default"
                   size="default"
                   type="submit"
-                  disabled={!isValid}
+                  disabled={!isValid || submitting}
                   className="w-full font-bold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl h-11 shadow-xs"
                 >
-                  Create Account <ArrowRight className="w-4 h-4 ml-2" />
+                  {submitting ? "Creating account…" : "Create account"}{" "}
+                  <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </div>
 

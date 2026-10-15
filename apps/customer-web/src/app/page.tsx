@@ -22,7 +22,14 @@ import { NotificationsPage } from "@/components/pages/NotificationsPage";
 import { SupportPage } from "@/components/pages/SupportPage";
 
 export default function Home() {
-  const { isLoggedIn, activeNav, setActiveNav } = useCustomer();
+  const { isLoggedIn, authLoading, activeNav, setActiveNav } = useCustomer();
+
+  if (authLoading)
+    return (
+      <div className="grid min-h-dvh place-items-center bg-slate-50 text-sm font-medium text-slate-500">
+        Restoring your secure session…
+      </div>
+    );
 
   // Unauthenticated pages (Landing, Register, Login, MFA)
   const isAuthPage =
