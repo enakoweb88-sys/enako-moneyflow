@@ -77,3 +77,46 @@ export interface ApprovalRequest {
   reason: string;
   status: "PENDING" | "APPROVED" | "REJECTED";
 }
+
+/** Read-only identity and wallet slice. Monetary values use integer minor units. */
+export type AppRole =
+  | "CUSTOMER"
+  | "OPERATOR"
+  | "OPERATIONS_MANAGER"
+  | "FINANCE_MANAGER"
+  | "COMPLIANCE_OFFICER"
+  | "CUSTOMER_SUPPORT"
+  | "ADMINISTRATOR"
+  | "CEO";
+
+export interface CurrentUserResponse {
+  id: string;
+  email: string;
+  displayName: string;
+  roles: AppRole[];
+}
+
+export interface CustomerProfileResponse {
+  id: string;
+  customerNumber: string;
+  displayName: string;
+  email: string;
+  phoneMasked?: string;
+  kycStatus:
+    "NOT_STARTED" | "PENDING" | "VERIFIED" | "MORE_INFO_REQUIRED" | "REJECTED";
+  kycTier: 1 | 2 | 3;
+  status: "ACTIVE" | "SUSPENDED" | "CLOSED";
+}
+
+export interface WalletResponse {
+  id: string;
+  currency: string;
+  status: "ACTIVE" | "SUSPENDED" | "CLOSED";
+  balanceMinor: number;
+  heldMinor: number;
+  availableMinor: number;
+}
+
+export interface CustomerWalletsResponse {
+  wallets: WalletResponse[];
+}
