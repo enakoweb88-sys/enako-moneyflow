@@ -118,8 +118,8 @@ export const ShellLayout: React.FC = () => {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const coachMarkSeen = localStorage.getItem('enako_coachmark_connect_seen')
-      if (!coachMarkSeen && onboardingDone) {
-        // Trigger contextual coach mark after onboarding
+      if (!coachMarkSeen) {
+        // Show the optional administrator hint once per browser.
         setShowCoachMark(true)
       }
     }
@@ -370,7 +370,7 @@ export const ShellLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#001f5b]/10 selection:text-[#001f5b]">
+    <div className="h-dvh overflow-hidden flex flex-col bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#001f5b]/10 selection:text-[#001f5b]">
       <Toaster position="top-right" />
 
       {/* ============================================================ */}

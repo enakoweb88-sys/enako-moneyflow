@@ -98,7 +98,7 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
+    <div className="h-dvh overflow-hidden flex flex-col bg-slate-50 font-sans">
       <CustomerHeader />
 
       {/* Mobile-only navigation bar (visible below md breakpoint) */}

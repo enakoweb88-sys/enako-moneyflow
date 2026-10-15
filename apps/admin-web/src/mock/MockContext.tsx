@@ -17,6 +17,7 @@ import {
   type FeeRule,
   type ReconciliationRun,
   type AuditLogRecord,
+  type LedgerEntry,
   type StaffUser,
   type SystemSetting,
 } from './data'
@@ -56,7 +57,7 @@ interface MockContextType {
   approvalsHistory: ApprovalItem[]
   wallets: CustomerWalletRecord[]
   accounts: ChartOfAccount[]
-  ledgerEntries: Record<string, never[]>
+  ledgerEntries: Record<string, LedgerEntry[]>
   fxRates: FxRate[]
   feeRules: FeeRule[]
   reconRuns: ReconciliationRun[]
@@ -128,7 +129,7 @@ export const MockProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [approvalsHistory, setApprovalsHistory] = useState<ApprovalItem[]>([])
   const [wallets, setWallets] = useState<CustomerWalletRecord[]>([])
   const [accounts] = useState<ChartOfAccount[]>([])
-  const [ledgerEntries] = useState<Record<string, never[]>>({})
+  const [ledgerEntries] = useState<Record<string, LedgerEntry[]>>({})
   const [fxRates, setFxRates] = useState<FxRate[]>([])
   const [feeRules, setFeeRules] = useState<FeeRule[]>([])
   const [reconRuns, setReconRuns] = useState<ReconciliationRun[]>([])
