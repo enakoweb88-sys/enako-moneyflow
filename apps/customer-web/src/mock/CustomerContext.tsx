@@ -104,23 +104,36 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
   );
   const [sessions] = useState<CustomerSession[]>(INITIAL_SESSIONS);
 
-  const loadApplicationProfile = async (session: AuthSession) => {
+  const loadApplicationProfile = async (
+    session: AuthSession,
+  ): Promise<"exists" | "missing" | "unavailable"> => {
     const apiUrl = process.env.NEXT_PUBLIC_MONEYFLOW_API_URL;
-    if (!apiUrl) return false;
-    const response = await fetch(`${apiUrl.replace(/\/$/, "")}/api/v1/me`, {
-      headers: { Authorization: `Bearer ${session.accessToken}` },
-    });
-    if (response.status === 404 || !response.ok) return false;
-    const profile = (await response.json()) as {
-      email?: string;
-      displayName?: string;
-    };
-    setUser((current) => ({
-      ...current,
-      email: profile.email || session.user.email || "",
-      name: profile.displayName || current.name,
-    }));
-    return true;
+    if (!apiUrl) return "unavailable";
+    try {
+      const response = await fetch(`${apiUrl.replace(/\/$/, "")}/api/v1/me`, {
+        headers: { Authorization: `Bearer ${session.accessToken}` },
+      });
+      if (response.status === 404) return "missing";
+      if (!response.ok) return "unavailable";
+      const profile = (await response.json()) as {
+        email?: string;
+        displayName?: string;
+      };
+      setUser((current) => ({
+        ...current,
+        email: profile.email || session.user.email || "",
+        name: profile.displayName || current.name,
+      }));
+      return "exists";
+    } catch {
+      // A backend outage, CORS block, or local network issue must not invalidate
+      // a valid Supabase session or crash the customer portal.
+      setUser((current) => ({
+        ...current,
+        email: current.email || session.user.email || "",
+      }));
+      return "unavailable";
+    }
   };
 
   useEffect(() => {
@@ -128,9 +141,9 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
       const session = await restoreSession();
       if (session) {
         setIsLoggedIn(true);
-        const profileExists = await loadApplicationProfile(session);
+        const profileState = await loadApplicationProfile(session);
         setActiveNav("dashboard");
-        setShowOnboarding(!profileExists);
+        setShowOnboarding(profileState === "missing");
       }
       setAuthLoading(false);
     })();
@@ -140,7 +153,7 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
     const session = await signInWithPassword(email, password);
     setIsLoggedIn(true);
     setActiveNav("dashboard");
-    setShowOnboarding(!(await loadApplicationProfile(session)));
+    setShowOnboarding((await loadApplicationProfile(session)) === "missing");
   };
   const signUp = async (email: string, password: string) => {
     const session = await signUpWithPassword(email, password);
