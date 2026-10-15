@@ -23,9 +23,10 @@ FROM node:20-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
-COPY --from=builder /app/apps/customer-web/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-web/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/apps/customer-web/public ./apps/customer-web/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-web/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/apps/customer-web/.next/static ./apps/customer-web/.next/static
+WORKDIR /app/apps/customer-web
 USER nextjs
 EXPOSE 3000
-CMD ["node_modules/.bin/next", "start", "-p", "3000"]
+CMD ["node", "server.js"]
