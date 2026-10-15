@@ -23,6 +23,7 @@ import { SupportPage } from "@/components/pages/SupportPage";
 import { CustomerDevelopersPage } from "@/components/pages/CustomerDevelopersPage";
 import { CustomerAnalyticsPage } from "@/components/pages/CustomerAnalyticsPage";
 import { DisputesPage } from "@/components/pages/DisputesPage";
+import { PaymentActivationPage } from "@/components/pages/PaymentActivationPage";
 
 export default function Home() {
   const { isLoggedIn, authLoading, activeNav, setActiveNav } = useCustomer();
@@ -71,6 +72,8 @@ export default function Home() {
         return <CustomerAnalyticsPage />;
       case "send-withdraw":
         return <SendWithdrawPage />;
+      case "activate-payments":
+        return <PaymentActivationPage />;
       case "beneficiaries":
         return <BeneficiariesPage />;
       case "profile-kyc":
@@ -115,6 +118,7 @@ export default function Home() {
     { id: "wallet", label: "Wallet" },
     { id: "analytics", label: "Analytics" },
     { id: "send-withdraw", label: "Send & Withdraw" },
+    { id: "activate-payments", label: "Activate payments" },
     { id: "beneficiaries", label: "Beneficiaries" },
     { id: "profile-kyc", label: "KYC" },
     { id: "security", label: "Security" },

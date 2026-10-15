@@ -12,6 +12,7 @@ import {
   Send,
   ShieldCheck,
   MessageSquareWarning,
+  CreditCard,
   Users,
   Wallet,
 } from "lucide-react";
@@ -55,6 +56,12 @@ export const CustomerSidebar: React.FC = () => {
       id: "send-withdraw",
       label: "Send & withdraw",
       icon: Send,
+      group: "Money movement",
+    },
+    {
+      id: "activate-payments",
+      label: "Activate payments",
+      icon: CreditCard,
       group: "Money movement",
     },
     {
@@ -150,14 +157,54 @@ export const CustomerSidebar: React.FC = () => {
                     {developerMenuOpen ? (
                       <div className="absolute bottom-full left-1 right-1 z-30 mb-1 overflow-hidden rounded border border-slate-200 bg-white py-1 shadow-[0_8px_18px_rgba(15,23,42,0.13)]">
                         <p className="px-3 pb-1 pt-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                          API workspace
+                          Workbench
                         </p>
                         {[
                           ["developers", "Overview"],
-                          ["dev-keys", "API keys"],
                           ["dev-webhooks", "Webhooks"],
-                          ["dev-logs", "Events & logs"],
+                          ["dev-events", "Events"],
+                          ["dev-logs", "Logs"],
+                          ["dev-more", "More…"],
+                        ].map(([id, label]) => (
+                          <button
+                            key={id}
+                            className="block w-full px-3 py-1.5 text-left text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-[#001f5b]"
+                            onClick={() => {
+                              setActiveNav(id);
+                              setDeveloperMenuOpen(false);
+                            }}
+                            type="button"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                        <div className="my-1 border-t border-slate-200" />
+                        <p className="px-3 pb-1 pt-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                          Documentation
+                        </p>
+                        {[
                           ["dev-docs", "Documentation"],
+                          ["dev-reference", "API reference ↗"],
+                          ["dev-sdks", "SDKs ↗"],
+                          ["dev-cli", "CLI ↗"],
+                        ].map(([id, label]) => (
+                          <button
+                            key={id}
+                            className="block w-full px-3 py-1.5 text-left text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-[#001f5b]"
+                            onClick={() => {
+                              setActiveNav(id);
+                              setDeveloperMenuOpen(false);
+                            }}
+                            type="button"
+                          >
+                            {label}
+                          </button>
+                        ))}
+                        <div className="my-1 border-t border-slate-200" />
+                        {[
+                          ["dev-keys", "API keys"],
+                          ["dev-apps", "Created apps"],
+                          ["dev-settings", "Developer settings"],
                         ].map(([id, label]) => (
                           <button
                             key={id}

@@ -14,12 +14,31 @@ interface CustomerDevelopersPageProps {
   initialSubPage?: string;
 }
 
-type DeveloperTab = "overview" | "keys" | "webhooks" | "logs" | "docs";
+type DeveloperTab =
+  | "overview"
+  | "keys"
+  | "webhooks"
+  | "events"
+  | "logs"
+  | "more"
+  | "docs"
+  | "reference"
+  | "sdks"
+  | "cli"
+  | "apps"
+  | "settings";
 
 const mapTab = (page: string): DeveloperTab => {
   if (page.includes("key")) return "keys";
   if (page.includes("webhook")) return "webhooks";
-  if (page.includes("log") || page.includes("event")) return "logs";
+  if (page.includes("event")) return "events";
+  if (page.includes("log")) return "logs";
+  if (page.includes("reference")) return "reference";
+  if (page.includes("sdk")) return "sdks";
+  if (page.includes("cli")) return "cli";
+  if (page.includes("app")) return "apps";
+  if (page.includes("setting")) return "settings";
+  if (page.includes("more")) return "more";
   if (page.includes("doc")) return "docs";
   return "overview";
 };
@@ -28,6 +47,7 @@ const tabLabels: Array<{ id: DeveloperTab; label: string }> = [
   { id: "overview", label: "Overview" },
   { id: "keys", label: "API keys" },
   { id: "webhooks", label: "Webhooks" },
+  { id: "events", label: "Events" },
   { id: "logs", label: "Events & logs" },
   { id: "docs", label: "Documentation" },
 ];
@@ -227,6 +247,56 @@ export const CustomerDevelopersPage: React.FC<CustomerDevelopersPageProps> = ({
           </section>
         </div>
       )}
+
+      {activeTab === "events" && (
+        <DeveloperEmpty
+          title="No events yet"
+          description="Payment and account events will appear here once your integration is configured."
+          icon={<Radio />}
+        />
+      )}
+      {activeTab === "more" && (
+        <DeveloperEmpty
+          title="Additional developer tools"
+          description="Version management, idempotency controls and test data tools will appear here as the API platform is enabled."
+          icon={<ShieldCheck />}
+        />
+      )}
+      {activeTab === "reference" && (
+        <DeveloperEmpty
+          title="API reference"
+          description="The E‑NAKO MoneyFlow OpenAPI reference will be published here with live request and response schemas."
+          icon={<BookOpen />}
+        />
+      )}
+      {activeTab === "sdks" && (
+        <DeveloperEmpty
+          title="SDKs"
+          description="Official JavaScript, mobile and server SDKs will be published when customer API access is available."
+          icon={<BookOpen />}
+        />
+      )}
+      {activeTab === "cli" && (
+        <DeveloperEmpty
+          title="Command-line interface"
+          description="The E‑NAKO CLI will support local testing and operational diagnostics for approved integrators."
+          icon={<BookOpen />}
+        />
+      )}
+      {activeTab === "apps" && (
+        <DeveloperEmpty
+          title="No created apps"
+          description="Applications registered to your organisation will be managed here."
+          icon={<KeyRound />}
+        />
+      )}
+      {activeTab === "settings" && (
+        <DeveloperEmpty
+          title="Developer settings"
+          description="Configure your organisation’s developer notifications and integration defaults here."
+          icon={<ShieldCheck />}
+        />
+      )}
     </section>
   );
 };
@@ -257,5 +327,19 @@ const DocRow: React.FC<{
       <p>{detail}</p>
     </div>
     <ExternalLink className="h-4 w-4 text-slate-400" />
+  </div>
+);
+
+const DeveloperEmpty: React.FC<{
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+}> = ({ title, description, icon }) => (
+  <div className="mf-section-stack">
+    <section>
+      <h2>{title}</h2>
+      <p className="mf-section-copy">{description}</p>
+      <EmptyRow icon={icon} title={title} description={description} />
+    </section>
   </div>
 );
