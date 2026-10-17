@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -9,6 +9,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useCustomer } from "@/mock/CustomerContext";
+import { restoreSession } from "@/lib/supabaseAuth";
+import { toast } from "sonner";
 
 const steps = [
   "Business use",
@@ -41,6 +43,116 @@ export const PaymentActivationPage: React.FC = () => {
   const [step, setStep] = useState(0);
   const [useCase, setUseCase] = useState<(typeof uses)[number][0] | "">("");
   const [channels, setChannels] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState("");
+  const [form, setForm] = useState({
+    businessCountry: "CM",
+    organisationType: "",
+    legalBusinessName: "",
+    representativeName: "",
+    representativeEmail: "",
+    representativePhone: "",
+    representativeRole: "",
+    settlementCurrency: "XAF",
+    expectedMonthlyVolume: "",
+  });
+  const update = (key: keyof typeof form, value: string) =>
+    setForm((current) => ({ ...current, [key]: value }));
+  const api = async (path: string, options?: RequestInit) => {
+    const session = await restoreSession();
+    const baseUrl = process.env.NEXT_PUBLIC_MONEYFLOW_API_URL;
+    if (!session || !baseUrl)
+      throw new Error("Sign in again before continuing payment setup.");
+    const response = await fetch(`${baseUrl.replace(/\/$/, "")}${path}`, {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${session.accessToken}`,
+        "Content-Type": "application/json",
+        ...(options?.headers || {}),
+      },
+    });
+    if (response.status === 404) return null;
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok)
+      throw new Error(payload.message || "Payment setup could not be saved.");
+    return payload;
+  };
+  useEffect(() => {
+    void api("/api/v1/payment-activations/me")
+      .then((request) => {
+        if (!request) return;
+        const reverseChannelMap: Record<string, string> = {
+          mtn_momo: "mtn",
+          orange_money: "orange",
+          bank_settlement: "bank",
+        };
+        setUseCase(request.businessUse || "");
+        setChannels(
+          (request.channels || [])
+            .map((item: string) => reverseChannelMap[item])
+            .filter(Boolean),
+        );
+        setStatus(request.status || "");
+        setForm((current) => ({
+          ...current,
+          businessCountry: request.businessCountry || "CM",
+          organisationType: request.organisationType || "",
+          legalBusinessName: request.legalBusinessName || "",
+          representativeName: request.representativeName || "",
+          representativeEmail: request.representativeEmail || "",
+          representativePhone: request.representativePhone || "",
+          representativeRole: request.representativeRole || "",
+          settlementCurrency: request.settlementCurrency || "XAF",
+          expectedMonthlyVolume: request.expectedMonthlyVolume || "",
+        }));
+      })
+      .catch(() => undefined);
+  }, []);
+  const saveAndSubmit = async () => {
+    const channelMap: Record<string, string> = {
+      mtn: "mtn_momo",
+      orange: "orange_money",
+      bank: "bank_settlement",
+    };
+    if (
+      !useCase ||
+      !form.organisationType ||
+      !form.legalBusinessName ||
+      !form.representativeName ||
+      !form.representativeEmail ||
+      !form.representativeRole ||
+      !channels.length
+    ) {
+      toast.error(
+        "Complete the required organisation, representative, and payment-channel details.",
+      );
+      return;
+    }
+    setSaving(true);
+    try {
+      await api("/api/v1/payment-activations/me", {
+        method: "PUT",
+        body: JSON.stringify({
+          businessUse: useCase,
+          ...form,
+          channels: channels.map((channel) => channelMap[channel]),
+        }),
+      });
+      const request = await api("/api/v1/payment-activations/me/submit", {
+        method: "POST",
+      });
+      setStatus(request.status);
+      toast.success("Payment activation request submitted for review.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Payment setup could not be submitted.",
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
   const selected = (value: string) => channels.includes(value);
   const toggleChannel = (value: string) =>
     setChannels((current) =>
@@ -89,7 +201,12 @@ export const PaymentActivationPage: React.FC = () => {
           <div className="mf-form-grid">
             <label>
               Country
-              <select defaultValue="CM">
+              <select
+                value={form.businessCountry}
+                onChange={(event) =>
+                  update("businessCountry", event.target.value)
+                }
+              >
                 <option value="CM">Cameroon</option>
                 <option value="GA">Gabon</option>
                 <option value="CG">Republic of the Congo</option>
@@ -98,7 +215,12 @@ export const PaymentActivationPage: React.FC = () => {
             </label>
             <label>
               Organisation type
-              <select defaultValue="">
+              <select
+                value={form.organisationType}
+                onChange={(event) =>
+                  update("organisationType", event.target.value)
+                }
+              >
                 <option value="" disabled>
                   Select one
                 </option>
@@ -110,7 +232,13 @@ export const PaymentActivationPage: React.FC = () => {
             </label>
             <label className="mf-form-full">
               Legal business name
-              <input placeholder="Your registered organisation name" />
+              <input
+                value={form.legalBusinessName}
+                onChange={(event) =>
+                  update("legalBusinessName", event.target.value)
+                }
+                placeholder="Your registered organisation name"
+              />
             </label>
           </div>
         </>
@@ -126,19 +254,43 @@ export const PaymentActivationPage: React.FC = () => {
           <div className="mf-form-grid">
             <label>
               Full name
-              <input placeholder="Full legal name" />
+              <input
+                value={form.representativeName}
+                onChange={(event) =>
+                  update("representativeName", event.target.value)
+                }
+                placeholder="Full legal name"
+              />
             </label>
             <label>
               Work email
-              <input type="email" placeholder="name@organisation.cm" />
+              <input
+                value={form.representativeEmail}
+                onChange={(event) =>
+                  update("representativeEmail", event.target.value)
+                }
+                type="email"
+                placeholder="name@organisation.cm"
+              />
             </label>
             <label>
               Phone number
-              <input placeholder="+237" />
+              <input
+                value={form.representativePhone}
+                onChange={(event) =>
+                  update("representativePhone", event.target.value)
+                }
+                placeholder="+237"
+              />
             </label>
             <label>
               Role
-              <select defaultValue="">
+              <select
+                value={form.representativeRole}
+                onChange={(event) =>
+                  update("representativeRole", event.target.value)
+                }
+              >
                 <option value="" disabled>
                   Select role
                 </option>
@@ -205,13 +357,23 @@ export const PaymentActivationPage: React.FC = () => {
           <div className="mf-form-grid">
             <label>
               Settlement currency
-              <select defaultValue="XAF">
+              <select
+                value={form.settlementCurrency}
+                onChange={(event) =>
+                  update("settlementCurrency", event.target.value)
+                }
+              >
                 <option>XAF</option>
               </select>
             </label>
             <label>
               Expected monthly volume
-              <select defaultValue="">
+              <select
+                value={form.expectedMonthlyVolume}
+                onChange={(event) =>
+                  update("expectedMonthlyVolume", event.target.value)
+                }
+              >
                 <option value="" disabled>
                   Select range
                 </option>
@@ -252,8 +414,9 @@ export const PaymentActivationPage: React.FC = () => {
         <div className="mf-notice">
           <ShieldCheck className="h-4 w-4" />
           <p>
-            Your submission will require a live backend workflow before channels
-            or API credentials are enabled.
+            {status === "submitted"
+              ? "Your request is submitted and awaiting E‑NAKO review."
+              : "Your submission will be reviewed before channels or API credentials are enabled."}
           </p>
         </div>
       </>
@@ -305,16 +468,24 @@ export const PaymentActivationPage: React.FC = () => {
             </button>
             <button
               className="mf-primary-button"
-              disabled={step === 0 && !useCase}
+              disabled={
+                (step === 0 && !useCase) || saving || status === "submitted"
+              }
               onClick={() =>
                 step === steps.length - 1
-                  ? setActiveNav("dashboard")
+                  ? void saveAndSubmit()
                   : setStep((current) => current + 1)
               }
               type="button"
             >
               {step === steps.length - 1 ? (
-                "Finish setup"
+                saving ? (
+                  "Submitting…"
+                ) : status === "submitted" ? (
+                  "Submitted"
+                ) : (
+                  "Submit for review"
+                )
               ) : (
                 <>
                   Continue <ArrowRight className="h-4 w-4" />

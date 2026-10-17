@@ -41,6 +41,11 @@ server:
   port: ${PORT:8080}
 
 app:
+  email:
+    resend:
+      api-key: ${APP_EMAIL_RESEND_API_KEY:}
+      from: ${APP_EMAIL_FROM:}
+      reply-to: ${APP_EMAIL_REPLY_TO:}
   security:
     supabase:
       # Set APP_SECURITY_SUPABASE_ISSUER_URI to https://<project-ref>.supabase.co/auth/v1

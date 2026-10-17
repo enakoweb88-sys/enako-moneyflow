@@ -13,6 +13,10 @@ target/
 # Turbo cache
 .turbo/
 
+# Supabase CLI local state
+supabase/.temp/
+supabase/.branches/
+
 # Environment files and credentials
 .env
 .env.local
