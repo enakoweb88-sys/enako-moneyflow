@@ -81,15 +81,19 @@ export const CustomerOnboarding = () => {
   if (!showOnboarding) return null;
   const current = steps[step];
 
+  const openCurrentAction = () => {
+    setShowOnboarding(false);
+    if (current.route) setActiveNav(current.route);
+  };
+
   const next = async () => {
     setError("");
-    if (onboardingOrigin === "dashboard") {
-      setShowOnboarding(false);
-      if (current.route) setActiveNav(current.route);
-      return;
-    }
     if (step < steps.length - 1) {
       setStep((value) => value + 1);
+      return;
+    }
+    if (onboardingOrigin === "dashboard") {
+      setShowOnboarding(false);
       return;
     }
     setFinishing(true);
@@ -183,21 +187,30 @@ export const CustomerOnboarding = () => {
             >
               <ArrowLeft size={16} /> Back
             </button>
-            <button
-              type="button"
-              onClick={next}
-              disabled={finishing}
-              className="inline-flex items-center gap-3 rounded-xl bg-[#001f5b] px-5 py-3 text-sm font-bold text-white hover:bg-[#003078] disabled:opacity-60"
-            >
-              {finishing
-                ? "Preparing dashboard…"
-                : onboardingOrigin === "registration"
-                  ? step === steps.length - 1
+            <div className="flex items-center gap-3">
+              {onboardingOrigin === "dashboard" && current.route ? (
+                <button
+                  type="button"
+                  onClick={openCurrentAction}
+                  className="rounded-xl border border-[#e2c9bf] bg-[#fff8f4] px-4 py-3 text-sm font-bold text-[#a7494f] hover:bg-[#fcebe5]"
+                >
+                  {current.action}
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={next}
+                disabled={finishing}
+                className="inline-flex items-center gap-3 rounded-xl bg-[#001f5b] px-5 py-3 text-sm font-bold text-white hover:bg-[#003078] disabled:opacity-60"
+              >
+                {finishing
+                  ? "Preparing dashboard…"
+                  : step === steps.length - 1
                     ? "Finish"
-                    : "Next"
-                  : current.action}
-              <ArrowRight size={17} />
-            </button>
+                    : "Next"}
+                <ArrowRight size={17} />
+              </button>
+            </div>
           </div>
         </div>
       </section>

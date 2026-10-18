@@ -289,4 +289,6 @@
   .bento-card:hover {
     transform: none !important;
   }
+  .illustration-reel-frame { animation: none !important; opacity: 0; }
+  .illustration-reel-frame:first-child { opacity: 1; }
 }

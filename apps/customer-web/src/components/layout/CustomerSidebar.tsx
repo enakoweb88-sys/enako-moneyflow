@@ -100,17 +100,18 @@ export const CustomerSidebar: React.FC = () => {
     },
   ];
   return (
-    <aside className="hidden w-60 shrink-0 flex-col justify-between border-r border-slate-200 bg-white md:flex">
-      <div className="flex-1 overflow-y-auto px-3 py-4">
+    <aside className="relative hidden w-64 shrink-0 flex-col justify-between overflow-hidden border-r border-[#eadbd0] bg-[#fbf6f0] md:flex">
+      <div className="pointer-events-none absolute -left-24 -top-28 h-64 w-64 rounded-full bg-[#efaaa0]/18 blur-3xl" />
+      <div className="relative flex-1 overflow-y-auto px-3.5 py-5">
         <button
           type="button"
           onClick={() => setActiveNav("profile-kyc")}
-          className="mb-5 flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 text-left transition hover:border-[#008f94]/30 hover:bg-white hover:shadow-sm"
+          className="mb-6 flex w-full items-center gap-3 rounded-2xl border border-[#e8d2c8] bg-white/75 p-3 text-left shadow-[0_8px_24px_rgba(111,65,50,.06)] transition hover:-translate-y-0.5 hover:border-[#dc8a82] hover:bg-white hover:shadow-md"
         >
           <CustomerAvatar
             avatarId={user.avatarId}
             label={`${user.name || "Customer"} avatar`}
-            className="h-11 w-11 ring-2 ring-white shadow-sm"
+            className="h-11 w-11 ring-2 ring-[#f3b6ad] shadow-sm"
           />
           <span className="min-w-0 flex-1">
             <strong className="block truncate text-[13px] font-bold text-slate-900">
@@ -119,7 +120,7 @@ export const CustomerSidebar: React.FC = () => {
             <small className="mt-0.5 block truncate text-[10px] font-medium text-slate-500">
               {user.email || "Choose your name and avatar"}
             </small>
-            <small className="mt-1 block text-[10px] font-bold text-[#008f94]">
+            <small className="mt-1 block text-[10px] font-bold text-[#b65359]">
               View profile
             </small>
           </span>
@@ -135,7 +136,7 @@ export const CustomerSidebar: React.FC = () => {
             const groupHeading =
               item.group !== previousGroup ? (
                 <p
-                  className={`px-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 ${index === 0 ? "mb-1" : "mb-1 mt-5"}`}
+                  className={`px-2.5 text-[10px] font-bold uppercase tracking-[0.1em] text-[#a78d82] ${index === 0 ? "mb-1.5" : "mb-1.5 mt-5"}`}
                 >
                   {item.group}
                 </p>
@@ -148,11 +149,11 @@ export const CustomerSidebar: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setDeveloperMenuOpen((open) => !open)}
-                      className={`relative flex w-full items-center justify-between rounded px-2.5 py-1.5 text-left text-[13px] font-medium transition-colors ${active ? "bg-[#001f5b]/8 font-semibold text-[#001f5b]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`}
+                      className={`relative flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all ${active ? "bg-[#f3ddd4] font-semibold text-[#793e3f] shadow-sm" : "text-[#655852] hover:bg-white/80 hover:text-[#332b28]"}`}
                       aria-expanded={developerMenuOpen}
                     >
                       {active ? (
-                        <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 bg-[#001f5b]" />
+                        <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r bg-[#d76164]" />
                       ) : null}
                       <span className="flex items-center gap-2.5">
                         <Icon className="h-4 w-4" />
@@ -238,17 +239,17 @@ export const CustomerSidebar: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveNav(item.id)}
-                  className={`relative flex w-full items-center justify-between rounded px-2.5 py-1.5 text-left text-[13px] font-medium transition-colors ${active ? "bg-[#001f5b]/8 font-semibold text-[#001f5b]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"}`}
+                  className={`relative flex w-full items-center justify-between rounded-xl px-2.5 py-2 text-left text-[13px] font-medium transition-all ${active ? "bg-[#f3ddd4] font-semibold text-[#793e3f] shadow-sm" : "text-[#655852] hover:translate-x-0.5 hover:bg-white/80 hover:text-[#332b28]"}`}
                 >
                   {active ? (
-                    <span className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 bg-[#001f5b]" />
+                    <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r bg-[#d76164]" />
                   ) : null}
                   <span className="flex items-center gap-2.5">
                     <Icon className="h-4 w-4" />
                     {item.label}
                   </span>
                   {item.count ? (
-                    <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                    <span className="rounded-full bg-[#edd4cb] px-1.5 py-0.5 text-[10px] font-bold text-[#8d494c]">
                       {item.count}
                     </span>
                   ) : null}
@@ -261,7 +262,7 @@ export const CustomerSidebar: React.FC = () => {
       <button
         type="button"
         onClick={() => setActiveNav("profile-kyc")}
-        className="border-t border-slate-200 p-3.5 text-left text-[11px] font-semibold text-slate-500 hover:bg-slate-50 hover:text-[#001f5b]"
+        className="relative m-3.5 mt-2 rounded-xl border border-[#e5cfc5] bg-gradient-to-r from-[#fffaf6] to-[#f5dfd7] p-3.5 text-left text-[11px] font-bold text-[#8c4c4f] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
       >
         {user.kycStatus === "Verified"
           ? `${user.kycTier} identity verified`
