@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useCustomer } from "@/mock/CustomerContext";
+import { IllustrationReel } from "@/components/common/IllustrationReel";
 
 const steps = [
   {
@@ -16,7 +17,8 @@ const steps = [
       "Create your secure MoneyFlow customer profile",
     ],
     action: "Set up my profile",
-    image: "0% 0%",
+    frame: 0,
+    animated: false,
     route: "profile-kyc",
   },
   {
@@ -30,7 +32,8 @@ const steps = [
       "Track verification status from your dashboard",
     ],
     action: "Review verification",
-    image: "100% 0%",
+    frame: 1,
+    animated: true,
     route: "profile-kyc",
   },
   {
@@ -44,7 +47,8 @@ const steps = [
       "Keep recovery information current",
     ],
     action: "Review security",
-    image: "0% 100%",
+    frame: 2,
+    animated: false,
     route: "security",
   },
   {
@@ -58,7 +62,8 @@ const steps = [
       "A single workspace for regional money movement",
     ],
     action: "Open my dashboard",
-    image: "100% 100%",
+    frame: 3,
+    animated: false,
   },
 ];
 
@@ -99,23 +104,23 @@ export const CustomerOnboarding = () => {
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-[#06132b]/78 p-4 backdrop-blur-md">
       <section className="grid max-h-[92dvh] w-full max-w-6xl overflow-hidden rounded-[28px] bg-white shadow-[0_32px_100px_rgba(0,10,35,.4)] lg:grid-cols-[1.05fr_.95fr]">
-        <div className="relative min-h-[300px] overflow-hidden bg-[#001f5b] lg:min-h-[700px]">
-          <div
-            className="absolute inset-0 bg-no-repeat transition-all duration-700"
-            style={{
-              backgroundImage: "url('/moneyflow-onboarding-steps.png')",
-              backgroundSize: "200% 200%",
-              backgroundPosition: current.image,
-            }}
+        <div className="relative flex min-h-[300px] flex-col overflow-hidden bg-[#fff9f6] p-7 lg:min-h-[700px] lg:p-10">
+          <div className="absolute inset-0 opacity-50 [background-image:radial-gradient(#f2c7c2_1px,transparent_1px)] [background-size:22px_22px]" />
+          <IllustrationReel
+            source="/moneyflow-verification-reel.png"
+            animated={current.animated}
+            frame={current.frame}
+            label={`${current.eyebrow} illustration`}
+            className="relative m-auto h-[260px] w-full max-w-[430px] lg:h-[470px]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#00132f]/80 via-transparent to-[#00132f]/10" />
-          <div className="absolute bottom-7 left-7 right-7 text-white lg:bottom-10 lg:left-10">
-            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#7ce8e7]">
+          <div className="relative mt-auto border-t border-[#efdad5] pt-6 text-[#102544]">
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#d45f62]">
               Step {step + 1} of {steps.length}
             </p>
-            <p className="mt-2 max-w-md text-sm leading-6 text-white/78">
-              A guided setup designed to make every requirement clear before you
-              continue.
+            <p className="mt-2 max-w-md text-sm leading-6 text-slate-600">
+              {current.animated
+                ? "Watch the verification flow—from document to approval."
+                : "One clear action at a time, with no hidden requirements."}
             </p>
           </div>
         </div>

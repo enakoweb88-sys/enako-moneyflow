@@ -4,6 +4,7 @@
   :root {
     --font-sans: var(--font-sans), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-serif: var(--font-serif), 'Newsreader', Georgia, Cambria, 'Times New Roman', serif;
+    --font-mono: var(--font-sans);
   }
 
   body {
@@ -14,7 +15,28 @@
     padding: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "zero" 0;
   }
+}
+
+.font-mono,
+.money-number {
+  font-family: var(--font-sans);
+  font-feature-settings: "zero" 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.illustration-reel { overflow: hidden; position: relative; }
+.illustration-reel > span { background-repeat: no-repeat; background-size: 200% 200%; inset: 0; position: absolute; }
+.illustration-reel-frame { animation: illustrationFrame 4.6s steps(1, end) infinite; opacity: 0; }
+@keyframes illustrationFrame {
+  0%, 24.9% { opacity: 1; transform: translateY(0) scale(1); }
+  25%, 100% { opacity: 0; transform: translateY(5px) scale(.985); }
+}
+.dashboard-live-message { animation: dashboardMessage .45s ease both; }
+@keyframes dashboardMessage {
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .font-serif-accent {

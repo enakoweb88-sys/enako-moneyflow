@@ -228,9 +228,9 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!apiUrl)
       throw new Error("Customer API is not configured for this environment.");
     const response = await fetch(
-      `${apiUrl.replace(/\/$/, "")}/api/v1/customers/me/onboarding`,
+      `${apiUrl.replace(/\/$/, "")}/api/v1/customers/me`,
       {
-        method: "POST",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${session.accessToken}`,
           "Content-Type": "application/json",
