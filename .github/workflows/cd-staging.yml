@@ -67,6 +67,11 @@ jobs:
         with:
           context: .
           file: infra/docker/customer-web.Dockerfile
+          build-args: |
+            NEXT_PUBLIC_SUPABASE_URL=https://tdmwkowftrdyugpqlmol.supabase.co
+            # This is Supabase's browser-safe anon/publishable key, not a service-role secret.
+            NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkbXdrb3dmdHJkeXVncHFsbW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5ODY3ODQsImV4cCI6MjEwNzU2Mjc4NH0.aOQHMrKpab0CkT8kh37HZPdxyTEk7tCrORW8Tm_USbs
+            NEXT_PUBLIC_MONEYFLOW_API_URL=https://staging.moneyflow-api.enako.cm
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/customer-web:${{ steps.meta.outputs.tag }}

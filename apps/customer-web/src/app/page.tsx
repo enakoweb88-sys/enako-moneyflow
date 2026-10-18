@@ -97,11 +97,13 @@ export default function Home() {
     return <LandingPage />;
   }
 
-  // Logged-out auth pages (Register, Login, MFA): Clean layout with CustomerHeader
-  if (
-    !isLoggedIn ||
-    ["register", "login", "confirm-email"].includes(activeNav)
-  ) {
+  // Login and registration own the full viewport so the split visual remains immersive.
+  if (!isLoggedIn && ["register", "login"].includes(activeNav)) {
+    return renderContent();
+  }
+
+  // Other logged-out flows retain the public header.
+  if (!isLoggedIn || activeNav === "confirm-email") {
     return (
       <div className="min-h-screen flex flex-col bg-slate-50 font-sans">
         <CustomerHeader />

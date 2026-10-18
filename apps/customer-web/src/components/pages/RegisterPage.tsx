@@ -1,85 +1,57 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useCustomer } from "@/mock/CustomerContext";
+  ArrowRight,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  Phone,
+  UserRound,
+} from "lucide-react";
 import { toast } from "sonner";
-import { UserPlus, ShieldCheck, ArrowRight } from "lucide-react";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { useCustomer } from "@/mock/CustomerContext";
 
-export const RegisterPage: React.FC = () => {
+export const RegisterPage = () => {
   const { setActiveNav, setRegistrationDetails, signUp } = useCustomer();
-
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Calculate Password Strength
-  const getPasswordStrength = (pwd: string) => {
-    if (!pwd)
-      return {
-        score: 0,
-        label: "None",
-        color: "bg-slate-200",
-        textCol: "text-slate-400",
-      };
-    if (pwd.length < 6)
-      return {
-        score: 25,
-        label: "Weak",
-        color: "bg-rose-500",
-        textCol: "text-rose-600",
-      };
-    if (pwd.length < 10)
-      return {
-        score: 65,
-        label: "Good",
-        color: "bg-amber-500",
-        textCol: "text-amber-700",
-      };
-    return {
-      score: 100,
-      label: "Strong",
-      color: "bg-[#00c2c7]",
-      textCol: "text-[#00898d]",
-    };
-  };
-
-  const strength = getPasswordStrength(password);
+  const passwordScore = [
+    password.length >= 8,
+    /[A-Z]/.test(password),
+    /[0-9]/.test(password),
+    /[^A-Za-z0-9]/.test(password),
+  ].filter(Boolean).length;
   const isValid =
-    fullName.trim().length > 2 &&
+    fullName.trim().length >= 3 &&
     email.includes("@") &&
-    phone.trim().length > 6 &&
-    password.length >= 6 &&
+    phone.trim().length >= 7 &&
+    passwordScore >= 3 &&
     password === confirmPassword;
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleRegister = async (event: React.FormEvent) => {
+    event.preventDefault();
     if (!isValid) return;
+    const profile = { fullName: fullName.trim(), phone: phone.trim() };
     setRegistrationDetails({
-      name: fullName.trim(),
+      name: profile.fullName,
       email: email.trim(),
-      phone: phone.trim(),
+      phone: profile.phone,
     });
     setSubmitting(true);
     try {
-      const signedIn = await signUp(email.trim(), password);
-      if (signedIn)
-        toast.success("Account created. Continue with customer onboarding.");
+      const signedIn = await signUp(email.trim(), password, profile);
+      if (signedIn) toast.success("Your MoneyFlow account is ready.");
       else {
-        toast.success(
-          "Check your email to confirm your account, then sign in.",
-        );
+        toast.success("Check your inbox to confirm your email address.");
         setActiveNav("confirm-email");
       }
     } catch (error) {
@@ -94,143 +66,127 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="py-12 px-4 flex items-center justify-center">
-      <div className="w-full max-w-md space-y-6">
-        <Card className="shadow-lg border-slate-200 rounded-2xl overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
-          <CardHeader className="text-center pb-4 pt-6 bg-slate-50/50 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-[#001f5b] text-white flex items-center justify-center mx-auto mb-3 shadow-xs">
-              <UserPlus className="w-6 h-6 text-[#00c2c7]" />
+    <AuthShell
+      eyebrow="Open your MoneyFlow account"
+      title="Start moving money smarter"
+      description="Create your secure profile and prepare your business for seamless regional settlements."
+    >
+      <form onSubmit={handleRegister} className="auth-form auth-form-register">
+        <div className="auth-field-grid">
+          <label className="auth-field">
+            <span>Full legal name</span>
+            <div className="auth-input-wrap">
+              <UserRound size={18} />
+              <input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Your full name"
+                autoComplete="name"
+                required
+              />
             </div>
-            <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
-              Create an E-NAKO Account
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500 mt-1">
-              Start sending cross-border remittances with guaranteed conversion
-              parity
-            </CardDescription>
-          </CardHeader>
+          </label>
+          <label className="auth-field">
+            <span>Phone number</span>
+            <div className="auth-input-wrap">
+              <Phone size={18} />
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+237 6XX XXX XXX"
+                autoComplete="tel"
+                required
+              />
+            </div>
+          </label>
+        </div>
 
-          <CardContent className="p-6">
-            <form
-              onSubmit={handleRegister}
-              className="space-y-4 text-xs font-sans"
+        <label className="auth-field">
+          <span>Email address</span>
+          <div className="auth-input-wrap">
+            <Mail size={18} />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="you@company.com"
+              autoComplete="email"
+              required
+            />
+          </div>
+        </label>
+
+        <label className="auth-field">
+          <span>Password</span>
+          <div className="auth-input-wrap">
+            <LockKeyhole size={18} />
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="At least 8 characters"
+              autoComplete="new-password"
+              required
+            />
+            <button
+              type="button"
+              className="auth-password-toggle"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              <div>
-                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
-                  Full Legal Name
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Enter your full legal name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="w-full text-xs font-sans border-slate-300 rounded-xl h-10"
-                />
-              </div>
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          <span
+            className="auth-strength"
+            aria-label={`Password strength ${passwordScore} of 4`}
+          >
+            {[1, 2, 3, 4].map((level) => (
+              <i
+                key={level}
+                className={level <= passwordScore ? "is-active" : ""}
+              />
+            ))}
+          </span>
+          <small>Use 8+ characters with uppercase, number and symbol.</small>
+        </label>
 
-              <div>
-                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
-                  Corporate / Personal Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="e.g. s.fosso@enako-group.cm"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full text-xs font-sans border-slate-300 rounded-xl h-10"
-                />
-              </div>
+        <label className="auth-field">
+          <span>Confirm password</span>
+          <div
+            className={`auth-input-wrap ${confirmPassword && password !== confirmPassword ? "is-error" : ""}`}
+          >
+            <LockKeyhole size={18} />
+            <input
+              type={showPassword ? "text" : "password"}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Repeat your password"
+              autoComplete="new-password"
+              required
+            />
+          </div>
+          {confirmPassword && password !== confirmPassword && (
+            <small className="auth-error">Passwords do not match.</small>
+          )}
+        </label>
 
-              <div>
-                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
-                  Phone Number (CEMAC / International)
-                </label>
-                <Input
-                  type="tel"
-                  placeholder="e.g. +237 677 89 23 82"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full text-xs font-mono border-slate-300 rounded-xl h-10"
-                />
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
-                  Password
-                </label>
-                <Input
-                  type="password"
-                  placeholder="Minimum 8 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full text-xs border-slate-300 rounded-xl h-10"
-                />
-
-                {/* Password Strength Bar & Label */}
-                {password && (
-                  <div className="mt-2 space-y-1">
-                    <div className="h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                      <div
-                        style={{ width: `${strength.score}%` }}
-                        className={`h-full ${strength.color} transition-all duration-300`}
-                      />
-                    </div>
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500">Security rating:</span>
-                      <span className={`font-semibold ${strength.textCol}`}>
-                        {strength.label}
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
-                  Confirm Password
-                </label>
-                <Input
-                  type="password"
-                  placeholder="Re-enter password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full text-xs border-slate-300 rounded-xl h-10"
-                />
-                {confirmPassword && password !== confirmPassword && (
-                  <p className="text-rose-600 text-xs mt-1">
-                    Passwords do not match.
-                  </p>
-                )}
-              </div>
-
-              <div className="pt-2">
-                <Button
-                  variant="default"
-                  size="default"
-                  type="submit"
-                  disabled={!isValid || submitting}
-                  className="w-full font-bold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl h-11 shadow-xs"
-                >
-                  {submitting ? "Creating account…" : "Create account"}{" "}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-
-              <div className="text-center pt-3 border-t border-slate-100">
-                <span className="text-slate-500">Already registered? </span>
-                <button
-                  type="button"
-                  onClick={() => setActiveNav("login")}
-                  className="text-[#001f5b] hover:text-[#00c2c7] font-bold underline cursor-pointer transition-colors"
-                >
-                  Sign in
-                </button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        <button
+          className="auth-submit"
+          type="submit"
+          disabled={!isValid || submitting}
+        >
+          {submitting ? "Creating your account…" : "Create secure account"}
+          {!submitting && <ArrowRight size={18} />}
+        </button>
+        <p className="auth-switch">
+          Already registered?{" "}
+          <button type="button" onClick={() => setActiveNav("login")}>
+            Sign in
+          </button>
+        </p>
+      </form>
+    </AuthShell>
   );
 };

@@ -19,10 +19,10 @@ import {
   type TransactionActivity,
 } from "./customerData";
 import {
-  clearSession,
   resendConfirmationEmail,
   restoreSession,
   signInWithPassword,
+  signOutSession,
   signUpWithPassword,
   type AuthSession,
 } from "@/lib/supabaseAuth";
@@ -34,8 +34,12 @@ interface CustomerContextType {
   setIsLoggedIn: (logged: boolean) => void;
   authLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<boolean>;
-  signOut: () => void;
+  signUp: (
+    email: string,
+    password: string,
+    profile: { fullName: string; phone: string },
+  ) => Promise<boolean>;
+  signOut: () => Promise<void>;
   pendingConfirmationEmail: string;
   resendConfirmation: () => Promise<void>;
   activeNav: string;
@@ -155,8 +159,12 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
     setActiveNav("dashboard");
     setShowOnboarding((await loadApplicationProfile(session)) === "missing");
   };
-  const signUp = async (email: string, password: string) => {
-    const session = await signUpWithPassword(email, password);
+  const signUp = async (
+    email: string,
+    password: string,
+    profile: { fullName: string; phone: string },
+  ) => {
+    const session = await signUpWithPassword(email, password, profile);
     if (!session) {
       setPendingConfirmationEmail(email);
       return false;
@@ -174,8 +182,8 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     await resendConfirmationEmail(pendingConfirmationEmail);
   };
-  const signOut = () => {
-    clearSession();
+  const signOut = async () => {
+    await signOutSession();
     setIsLoggedIn(false);
     setShowOnboarding(false);
     setActiveNav("landing");

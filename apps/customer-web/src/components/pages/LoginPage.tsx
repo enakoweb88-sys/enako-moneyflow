@@ -1,33 +1,27 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useCustomer } from "@/mock/CustomerContext";
+import { useState } from "react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 import { toast } from "sonner";
-import { ShieldCheck, Lock, Mail, ArrowRight } from "lucide-react";
+import { AuthShell } from "@/components/auth/AuthShell";
+import { useCustomer } from "@/mock/CustomerContext";
+import { requestPasswordReset } from "@/lib/supabaseAuth";
 
-export const LoginPage: React.FC = () => {
+export const LoginPage = () => {
   const { setActiveNav, signIn } = useCustomer();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) return;
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!email.trim() || !password) return;
     setSubmitting(true);
     try {
-      await signIn(email, password);
-      toast.success("Signed in successfully.");
+      await signIn(email.trim(), password);
+      toast.success("Welcome back to MoneyFlow.");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Unable to sign in.",
@@ -37,92 +31,88 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const handleReset = async () => {
+    if (!email.trim()) {
+      toast.info("Enter your email address first.");
+      return;
+    }
+    setResetting(true);
+    try {
+      await requestPasswordReset(email.trim());
+      toast.success("Password recovery instructions have been sent.");
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Unable to send recovery email.",
+      );
+    } finally {
+      setResetting(false);
+    }
+  };
+
   return (
-    <div className="py-16 px-4 flex items-center justify-center">
-      <div className="w-full max-w-md space-y-6">
-        <Card className="shadow-lg border-slate-200 rounded-2xl overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
-          <CardHeader className="text-center pb-4 pt-6 bg-slate-50/50 border-b border-slate-100">
-            <div className="w-12 h-12 rounded-xl bg-[#001f5b] text-white flex items-center justify-center mx-auto mb-3 shadow-xs">
-              <ShieldCheck className="w-6 h-6 text-[#00c2c7]" />
-            </div>
-            <CardTitle className="text-2xl font-extrabold tracking-tight text-slate-900">
-              Customer Sign In
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500 mt-1">
-              Access your institutional multi-currency wallet and manage
-              international remittances
-            </CardDescription>
-          </CardHeader>
+    <AuthShell
+      eyebrow="Secure customer access"
+      title="Welcome back"
+      description="Sign in to manage your transfers, settlement activity and regional wallet."
+    >
+      <form onSubmit={handleLogin} className="auth-form">
+        <label className="auth-field">
+          <span>Email address</span>
+          <div className="auth-input-wrap">
+            <Mail size={18} />
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              placeholder="you@company.com"
+              autoComplete="email"
+              required
+            />
+          </div>
+        </label>
 
-          <CardContent className="p-6">
-            <form
-              onSubmit={handleLogin}
-              className="space-y-4 text-xs font-sans"
+        <label className="auth-field">
+          <span className="auth-label-row">
+            <span>Password</span>
+            <button type="button" onClick={handleReset} disabled={resetting}>
+              {resetting ? "Sending…" : "Forgot password?"}
+            </button>
+          </span>
+          <div className="auth-input-wrap">
+            <LockKeyhole size={18} />
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Enter your password"
+              autoComplete="current-password"
+              required
+            />
+            <button
+              type="button"
+              className="auth-password-toggle"
+              onClick={() => setShowPassword((visible) => !visible)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              <div>
-                <label className="block text-slate-700 font-bold uppercase tracking-wider mb-1.5">
-                  Email Address
-                </label>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full text-xs font-sans border-slate-300 rounded-xl h-11"
-                />
-              </div>
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+        </label>
 
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-slate-700 font-bold uppercase tracking-wider">
-                    Password
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      toast.info(
-                        "Password recovery link sent to your registered email.",
-                      )
-                    }
-                    className="text-[#001f5b] hover:text-[#00c2c7] font-semibold cursor-pointer transition-colors"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full text-xs border-slate-300 rounded-xl h-11"
-                />
-              </div>
+        <button className="auth-submit" type="submit" disabled={submitting}>
+          {submitting ? "Signing you in…" : "Sign in securely"}
+          {!submitting && <ArrowRight size={18} />}
+        </button>
 
-              <div className="pt-2">
-                <Button
-                  variant="default"
-                  size="default"
-                  type="submit"
-                  className="w-full font-bold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl h-11 shadow-xs"
-                >
-                  {submitting ? "Signing in…" : "Sign in"}{" "}
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-
-              <div className="text-center pt-3 border-t border-slate-100">
-                <span className="text-slate-500">Don’t have an account? </span>
-                <button
-                  type="button"
-                  onClick={() => setActiveNav("register")}
-                  className="text-[#001f5b] hover:text-[#00c2c7] font-bold underline cursor-pointer transition-colors"
-                >
-                  Register organization
-                </button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        <p className="auth-switch">
+          New to MoneyFlow?{" "}
+          <button type="button" onClick={() => setActiveNav("register")}>
+            Create an account
+          </button>
+        </p>
+      </form>
+    </AuthShell>
   );
 };

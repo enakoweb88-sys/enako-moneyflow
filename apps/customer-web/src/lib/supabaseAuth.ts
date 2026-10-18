@@ -1,3 +1,5 @@
+import { createClient, type Session } from "@supabase/supabase-js";
+
 export interface AuthSession {
   accessToken: string;
   refreshToken: string;
@@ -5,134 +7,93 @@ export interface AuthSession {
   user: { id: string; email?: string };
 }
 
-const storageKey = "enako.moneyflow.auth.session";
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-const config = () => {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-  if (!url || !publishableKey) {
-    throw new Error(
-      "Customer authentication is not configured for this environment.",
-    );
-  }
-  return { url: url.replace(/\/$/, ""), publishableKey };
-};
+if (!url || !publishableKey) {
+  throw new Error(
+    "Customer authentication is not configured for this environment.",
+  );
+}
 
-const sessionFromResponse = (payload: Record<string, unknown>): AuthSession => {
-  const accessToken = String(payload.access_token || "");
-  const refreshToken = String(payload.refresh_token || "");
-  const expiresIn = Number(payload.expires_in || 0);
-  const user = payload.user as { id?: string; email?: string } | undefined;
-  if (!accessToken || !refreshToken || !expiresIn || !user?.id)
-    throw new Error("No active session was returned.");
-  return {
-    accessToken,
-    refreshToken,
-    expiresAt: Date.now() + expiresIn * 1000,
-    user: { id: user.id, email: user.email },
-  };
-};
+export const supabase = createClient(url, publishableKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+  },
+});
 
-const request = async (path: string, body: unknown) => {
-  const { url, publishableKey } = config();
-  const response = await fetch(`${url}/auth/v1/${path}`, {
-    method: "POST",
-    headers: { apikey: publishableKey, "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  const payload = (await response.json().catch(() => ({}))) as Record<
-    string,
-    unknown
-  >;
-  if (!response.ok)
-    throw new Error(
-      String(
-        payload.msg || payload.message || "Authentication request failed.",
-      ),
-    );
-  return payload;
-};
-
-export const saveSession = (session: AuthSession) =>
-  localStorage.setItem(storageKey, JSON.stringify(session));
-export const clearSession = () => localStorage.removeItem(storageKey);
+const toAuthSession = (session: Session): AuthSession => ({
+  accessToken: session.access_token,
+  refreshToken: session.refresh_token,
+  expiresAt:
+    (session.expires_at ?? Math.floor(Date.now() / 1000) + 3600) * 1000,
+  user: { id: session.user.id, email: session.user.email },
+});
 
 export const restoreSession = async (): Promise<AuthSession | null> => {
-  const callbackParams = new URLSearchParams(window.location.hash.slice(1));
-  const callbackAccessToken = callbackParams.get("access_token");
-  const callbackRefreshToken = callbackParams.get("refresh_token");
-  const callbackExpiresIn = Number(callbackParams.get("expires_in") || 0);
-  if (callbackAccessToken && callbackRefreshToken && callbackExpiresIn) {
-    const [, payload = ""] = callbackAccessToken.split(".");
-    try {
-      const decoded = JSON.parse(
-        atob(payload.replace(/-/g, "+").replace(/_/g, "/")),
-      ) as {
-        sub?: string;
-        email?: string;
-      };
-      if (decoded.sub) {
-        const session = {
-          accessToken: callbackAccessToken,
-          refreshToken: callbackRefreshToken,
-          expiresAt: Date.now() + callbackExpiresIn * 1000,
-          user: { id: decoded.sub, email: decoded.email },
-        };
-        saveSession(session);
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname,
-        );
-        return session;
-      }
-    } catch {
-      // An invalid callback is treated as no session and will not be persisted.
-    }
-  }
-  const raw = localStorage.getItem(storageKey);
-  if (!raw) return null;
-  try {
-    const session = JSON.parse(raw) as AuthSession;
-    if (session.expiresAt > Date.now() + 30_000) return session;
-    const payload = await request("token?grant_type=refresh_token", {
-      refresh_token: session.refreshToken,
-    });
-    const refreshed = sessionFromResponse(payload);
-    saveSession(refreshed);
-    return refreshed;
-  } catch {
-    clearSession();
+  const { data, error } = await supabase.auth.getSession();
+  if (error) throw error;
+  if (!data.session) return null;
+
+  // Validate the stored access token with Supabase before treating it as active.
+  const { error: userError } = await supabase.auth.getUser();
+  if (userError) {
+    await supabase.auth.signOut({ scope: "local" });
     return null;
   }
+
+  return toAuthSession(data.session);
 };
 
 export const signInWithPassword = async (email: string, password: string) => {
-  const payload = await request("token?grant_type=password", {
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
-  const session = sessionFromResponse(payload);
-  saveSession(session);
-  return session;
+  if (error) throw error;
+  if (!data.session) throw new Error("No active session was returned.");
+  return toAuthSession(data.session);
 };
 
-export const signUpWithPassword = async (email: string, password: string) => {
-  const payload = await request("signup", {
+export const signUpWithPassword = async (
+  email: string,
+  password: string,
+  profile: { fullName: string; phone: string },
+) => {
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: window.location.origin },
+    options: {
+      emailRedirectTo: window.location.origin,
+      data: {
+        full_name: profile.fullName,
+        phone: profile.phone,
+      },
+    },
   });
-  if (!payload.access_token) return null;
-  const session = sessionFromResponse(payload);
-  saveSession(session);
-  return session;
+  if (error) throw error;
+  return data.session ? toAuthSession(data.session) : null;
 };
 
 export const resendConfirmationEmail = async (email: string) => {
-  await request("resend", {
+  const { error } = await supabase.auth.resend({
     type: "signup",
     email,
     options: { emailRedirectTo: window.location.origin },
   });
+  if (error) throw error;
+};
+
+export const requestPasswordReset = async (email: string) => {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin,
+  });
+  if (error) throw error;
+};
+
+export const signOutSession = async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
 };
