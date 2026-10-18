@@ -71,6 +71,7 @@ export const CustomerOnboarding = () => {
   const {
     showOnboarding,
     setShowOnboarding,
+    onboardingOrigin,
     setActiveNav,
     completeOnboarding,
   } = useCustomer();
@@ -82,8 +83,12 @@ export const CustomerOnboarding = () => {
 
   const next = async () => {
     setError("");
-    if (step < steps.length - 1) {
+    if (onboardingOrigin === "dashboard") {
+      setShowOnboarding(false);
       if (current.route) setActiveNav(current.route);
+      return;
+    }
+    if (step < steps.length - 1) {
       setStep((value) => value + 1);
       return;
     }
@@ -108,7 +113,7 @@ export const CustomerOnboarding = () => {
           <div className="absolute inset-0 opacity-50 [background-image:radial-gradient(#f2c7c2_1px,transparent_1px)] [background-size:22px_22px]" />
           <IllustrationReel
             source="/moneyflow-verification-reel.png"
-            animated={current.animated}
+            animated={false}
             frame={current.frame}
             label={`${current.eyebrow} illustration`}
             className="relative m-auto h-[260px] w-full max-w-[430px] lg:h-[470px]"
@@ -184,7 +189,13 @@ export const CustomerOnboarding = () => {
               disabled={finishing}
               className="inline-flex items-center gap-3 rounded-xl bg-[#001f5b] px-5 py-3 text-sm font-bold text-white hover:bg-[#003078] disabled:opacity-60"
             >
-              {finishing ? "Preparing dashboard…" : current.action}
+              {finishing
+                ? "Preparing dashboard…"
+                : onboardingOrigin === "registration"
+                  ? step === steps.length - 1
+                    ? "Finish"
+                    : "Next"
+                  : current.action}
               <ArrowRight size={17} />
             </button>
           </div>

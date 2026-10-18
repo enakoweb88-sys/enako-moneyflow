@@ -13,7 +13,7 @@ const companionMessages = [
 ];
 
 export const DashboardPage = () => {
-  const { user, wallet, activities, setActiveNav, setShowOnboarding } =
+  const { user, wallet, activities, setActiveNav, openOnboarding } =
     useCustomer();
   const firstName = user.name?.split(" ")[0] || "there";
   const [messageIndex, setMessageIndex] = useState(0);
@@ -56,37 +56,37 @@ export const DashboardPage = () => {
 
   return (
     <div className="mx-auto max-w-7xl space-y-7 pb-10">
-      <section className="relative grid min-h-[350px] overflow-hidden rounded-[28px] bg-[#071a3d] text-white lg:grid-cols-[1.15fr_.85fr]">
+      <section className="relative grid min-h-[350px] overflow-hidden rounded-[28px] border border-[#eadfd8] bg-[#fffaf5] text-[#272321] shadow-[0_18px_60px_rgba(82,49,38,.08)] lg:grid-cols-[1.15fr_.85fr]">
         <div className="relative z-10 flex flex-col justify-center px-7 py-9 sm:px-10 lg:px-12">
-          <p className="text-xs font-bold uppercase tracking-[.18em] text-[#78e9e5]">
-            Your MoneyFlow companion
+          <p className="text-xs font-bold uppercase tracking-[.16em] text-[#b55358]">
+            MoneyFlow today
           </p>
-          <h1 className="mt-5 max-w-2xl font-serif text-4xl font-semibold tracking-[-.04em] sm:text-5xl">
-            Hello {firstName}, let’s make your money move with purpose.
+          <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-[1.06] tracking-[-.045em] sm:text-5xl">
+            Welcome back, {firstName}. Your next move is ready.
           </h1>
           <p
             key={messageIndex}
-            className="dashboard-live-message mt-5 max-w-xl text-sm leading-6 text-slate-300"
+            className="dashboard-live-message mt-5 max-w-xl text-sm leading-6 text-[#6f625d]"
             aria-live="polite"
           >
             {companionMessages[messageIndex]}
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <button
-              onClick={() => setShowOnboarding(true)}
-              className="rounded-xl bg-white px-4 py-3 text-xs font-bold text-[#001f5b] hover:bg-slate-100"
+              onClick={() => openOnboarding("dashboard")}
+              className="rounded-xl bg-[#d76164] px-4 py-3 text-xs font-bold text-white hover:bg-[#c45256]"
             >
               Continue setup
             </button>
             <button
               onClick={() => setActiveNav("profile-kyc")}
-              className="rounded-xl border border-white/25 px-4 py-3 text-xs font-bold text-white hover:bg-white/10"
+              className="rounded-xl border border-[#d9c8bf] bg-white/65 px-4 py-3 text-xs font-bold text-[#493d38] hover:bg-white"
             >
               Manage profile
             </button>
           </div>
         </div>
-        <div className="relative min-h-[300px] bg-[#fff6f2] lg:min-h-full">
+        <div className="relative min-h-[300px] bg-[#f9eee7] lg:min-h-full">
           <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(#edbbb8_1px,transparent_1px)] [background-size:22px_22px]" />
           <IllustrationReel
             source="/moneyflow-robot-reel.png"
@@ -95,7 +95,7 @@ export const DashboardPage = () => {
             className="absolute inset-4 sm:inset-7"
           />
           <div className="absolute bottom-5 left-5 rounded-full bg-white/90 px-3 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-[#c35359] shadow-sm backdrop-blur">
-            Live guidance · scene {messageIndex + 1}/4
+            Live guidance
           </div>
         </div>
       </section>

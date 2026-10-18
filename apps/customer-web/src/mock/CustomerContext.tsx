@@ -51,6 +51,8 @@ interface CustomerContextType {
   setEnvironment: (env: CustomerEnvironment) => void;
   showOnboarding: boolean;
   setShowOnboarding: (show: boolean) => void;
+  onboardingOrigin: "registration" | "dashboard";
+  openOnboarding: (origin: "registration" | "dashboard") => void;
   setRegistrationDetails: (details: {
     name: string;
     email: string;
@@ -102,6 +104,9 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
   const [environment, setEnvironment] =
     useState<CustomerEnvironment>("sandbox");
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingOrigin, setOnboardingOrigin] = useState<
+    "registration" | "dashboard"
+  >("registration");
   const [user, setUser] = useState<CustomerUser>(INITIAL_CUSTOMER_USER);
   const [wallet] = useState<CustomerWallet>(INITIAL_WALLET);
   const [activities] = useState<TransactionActivity[]>(INITIAL_ACTIVITIES);
@@ -166,7 +171,10 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
         setIsLoggedIn(true);
         const profileState = await loadApplicationProfile(session);
         setActiveNav("dashboard");
-        setShowOnboarding(profileState === "missing");
+        if (profileState === "missing") {
+          setOnboardingOrigin("registration");
+          setShowOnboarding(true);
+        }
       }
       setAuthLoading(false);
     })();
@@ -176,7 +184,12 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
     const session = await signInWithPassword(email, password);
     setIsLoggedIn(true);
     setActiveNav("dashboard");
-    setShowOnboarding((await loadApplicationProfile(session)) === "missing");
+    if ((await loadApplicationProfile(session)) === "missing") {
+      setOnboardingOrigin("registration");
+      setShowOnboarding(true);
+    } else {
+      setShowOnboarding(false);
+    }
   };
   const signUp = async (
     email: string,
@@ -190,6 +203,7 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     setIsLoggedIn(true);
     setActiveNav("dashboard");
+    setOnboardingOrigin("registration");
     setShowOnboarding(true);
     return true;
   };
@@ -219,6 +233,11 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
       email: details.email,
       phone: details.phone,
     }));
+
+  const openOnboarding = (origin: "registration" | "dashboard") => {
+    setOnboardingOrigin(origin);
+    setShowOnboarding(true);
+  };
 
   const completeOnboarding = async () => {
     const session = await restoreSession();
@@ -332,6 +351,8 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
         setEnvironment,
         showOnboarding,
         setShowOnboarding,
+        onboardingOrigin,
+        openOnboarding,
         setRegistrationDetails,
         completeOnboarding,
         user,
