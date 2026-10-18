@@ -17,6 +17,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useCustomer } from "@/mock/CustomerContext";
+import { CustomerAvatar } from "@/components/common/CustomerAvatar";
 
 export const CustomerSidebar: React.FC = () => {
   const { activeNav, setActiveNav, notifications, user } = useCustomer();
@@ -98,24 +99,31 @@ export const CustomerSidebar: React.FC = () => {
       group: "Developers",
     },
   ];
-  const initials = (user.name || "New customer")
-    .split(" ")
-    .map((word) => word[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-
   return (
     <aside className="hidden w-60 shrink-0 flex-col justify-between border-r border-slate-200 bg-white md:flex">
       <div className="flex-1 overflow-y-auto px-3 py-4">
-        <div className="mb-5 flex items-center gap-2 px-2.5">
-          <span className="flex h-5 w-5 items-center justify-center rounded bg-[#001f5b] text-[9px] font-bold text-white">
-            E
+        <button
+          type="button"
+          onClick={() => setActiveNav("profile-kyc")}
+          className="mb-5 flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 text-left transition hover:border-[#008f94]/30 hover:bg-white hover:shadow-sm"
+        >
+          <CustomerAvatar
+            avatarId={user.avatarId}
+            label={`${user.name || "Customer"} avatar`}
+            className="h-11 w-11 ring-2 ring-white shadow-sm"
+          />
+          <span className="min-w-0 flex-1">
+            <strong className="block truncate text-[13px] font-bold text-slate-900">
+              {user.name || "Complete your profile"}
+            </strong>
+            <small className="mt-0.5 block truncate text-[10px] font-medium text-slate-500">
+              {user.email || "Choose your name and avatar"}
+            </small>
+            <small className="mt-1 block text-[10px] font-bold text-[#008f94]">
+              View profile
+            </small>
           </span>
-          <span className="text-[13px] font-semibold tracking-tight text-slate-900">
-            E‑NAKO MoneyFlow
-          </span>
-        </div>
+        </button>
         <nav className="space-y-0.5">
           {items.map((item, index) => {
             const Icon = item.icon;
@@ -250,21 +258,15 @@ export const CustomerSidebar: React.FC = () => {
           })}
         </nav>
       </div>
-      <div className="flex items-center gap-2.5 border-t border-slate-200 bg-slate-50/70 p-3.5">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#001f5b]/20 bg-[#001f5b]/10 text-xs font-bold text-[#001f5b]">
-          {initials}
-        </div>
-        <div className="min-w-0">
-          <p className="truncate text-xs font-bold text-slate-900">
-            {user.name || "Account setup"}
-          </p>
-          <p className="text-[10px] font-semibold text-[#008f94]">
-            {user.kycStatus === "Verified"
-              ? `${user.kycTier} verified`
-              : "Verification required"}
-          </p>
-        </div>
-      </div>
+      <button
+        type="button"
+        onClick={() => setActiveNav("profile-kyc")}
+        className="border-t border-slate-200 p-3.5 text-left text-[11px] font-semibold text-slate-500 hover:bg-slate-50 hover:text-[#001f5b]"
+      >
+        {user.kycStatus === "Verified"
+          ? `${user.kycTier} identity verified`
+          : "Complete identity verification →"}
+      </button>
     </aside>
   );
 };

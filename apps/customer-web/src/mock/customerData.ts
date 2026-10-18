@@ -10,6 +10,7 @@ export interface CustomerUser {
   mfaEnabled: boolean;
   nationalIdMasked: string;
   address: string;
+  avatarId: number;
 }
 
 export interface CustomerWallet {
@@ -79,6 +80,7 @@ export const INITIAL_CUSTOMER_USER: CustomerUser = {
   mfaEnabled: false,
   nationalIdMasked: "",
   address: "",
+  avatarId: 0,
 };
 export const INITIAL_WALLET: CustomerWallet = {
   currency: "XAF",

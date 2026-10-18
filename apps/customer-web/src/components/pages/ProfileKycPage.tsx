@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Copy, Check, ExternalLink, Plus, HelpCircle } from "lucide-react";
 import { useCustomer } from "@/mock/CustomerContext";
+import { CustomerAvatar } from "@/components/common/CustomerAvatar";
 
 export const ProfileKycPage: React.FC = () => {
   const { user, updateProfile } = useCustomer();
@@ -10,14 +11,18 @@ export const ProfileKycPage: React.FC = () => {
   // Primary Tabs matching User Screenshots
   const [activeTab, setActiveTab] = useState<
     "account" | "business" | "tax" | "branding" | "domains" | "emails"
-  >("business");
+  >("account");
 
   // Account details state
-  const [accountName, setAccountName] = useState(user.name || "Enako");
-  const [accountId] = useState("acct_1UMHcxIFFwAstFq7");
+  const [accountName, setAccountName] = useState(user.name || "");
+  const [accountPhone, setAccountPhone] = useState(user.phone || "");
+  const [selectedAvatar, setSelectedAvatar] = useState(user.avatarId || 0);
+  const [accountId] = useState(user.id || "Pending profile creation");
   const [copiedId, setCopiedId] = useState(false);
   const [timezone, setTimezone] = useState("Africa - Douala");
   const [accountSaved, setAccountSaved] = useState(false);
+  const [accountSaving, setAccountSaving] = useState(false);
+  const [accountError, setAccountError] = useState("");
 
   // Business details state
   const [businessWebsite, setBusinessWebsite] = useState("enako.cm");
@@ -67,11 +72,28 @@ export const ProfileKycPage: React.FC = () => {
     setTimeout(() => setCopiedId(false), 2000);
   };
 
-  const handleSaveAccount = (e: React.FormEvent) => {
+  const handleSaveAccount = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfile(accountName, user.phone, user.address);
-    setAccountSaved(true);
-    setTimeout(() => setAccountSaved(false), 2500);
+    setAccountSaving(true);
+    setAccountError("");
+    try {
+      await updateProfile(
+        accountName,
+        accountPhone,
+        user.address,
+        selectedAvatar,
+      );
+      setAccountSaved(true);
+      setTimeout(() => setAccountSaved(false), 2500);
+    } catch (error) {
+      setAccountError(
+        error instanceof Error
+          ? error.message
+          : "We could not save your profile.",
+      );
+    } finally {
+      setAccountSaving(false);
+    }
   };
 
   return (
@@ -82,7 +104,7 @@ export const ProfileKycPage: React.FC = () => {
           Settings
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight mb-4">
-          Business
+          Profile &amp; account
         </h1>
 
         {/* Tab Bar matching exact screenshot */}
@@ -353,6 +375,42 @@ export const ProfileKycPage: React.FC = () => {
       {activeTab === "account" && (
         <div className="max-w-2xl space-y-5">
           <form onSubmit={handleSaveAccount} className="space-y-5">
+            <div className="rounded-2xl border border-slate-200 bg-white p-5">
+              <div className="flex items-center gap-4">
+                <CustomerAvatar
+                  avatarId={selectedAvatar}
+                  className="h-20 w-20 ring-4 ring-slate-100"
+                  label="Selected avatar"
+                />
+                <div>
+                  <h2 className="text-sm font-bold text-slate-900">
+                    Choose your avatar
+                  </h2>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">
+                    Select the character that will represent you across your
+                    MoneyFlow workspace.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 grid grid-cols-6 gap-2 sm:grid-cols-12">
+                {Array.from({ length: 12 }, (_, avatarId) => (
+                  <button
+                    key={avatarId}
+                    type="button"
+                    onClick={() => setSelectedAvatar(avatarId)}
+                    className={`rounded-full p-0.5 transition ${selectedAvatar === avatarId ? "ring-2 ring-[#008f94] ring-offset-2" : "opacity-75 hover:opacity-100"}`}
+                    aria-label={`Choose avatar ${avatarId + 1}`}
+                  >
+                    <CustomerAvatar
+                      avatarId={avatarId}
+                      className="aspect-square w-full"
+                      label={`Avatar option ${avatarId + 1}`}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Account name */}
             <div className="space-y-1.5">
               <label className="block text-xs font-semibold text-slate-900">
@@ -363,6 +421,19 @@ export const ProfileKycPage: React.FC = () => {
                 value={accountName}
                 onChange={(e) => setAccountName(e.target.value)}
                 className="w-full bg-white border border-slate-300 rounded-lg px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#001F5B]"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-900">
+                Phone number
+              </label>
+              <input
+                type="tel"
+                value={accountPhone}
+                onChange={(e) => setAccountPhone(e.target.value)}
+                placeholder="+237 6XX XXX XXX"
+                className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-[#001F5B]"
               />
             </div>
 
@@ -434,7 +505,7 @@ export const ProfileKycPage: React.FC = () => {
                 type="submit"
                 className="bg-[#001F5B] hover:bg-[#001744] text-white text-xs font-semibold px-6 py-2 rounded-lg shadow-2xs transition-colors cursor-pointer"
               >
-                Save
+                {accountSaving ? "Saving…" : "Save profile"}
               </button>
               {accountSaved && (
                 <span className="text-xs text-[#008f94] font-medium flex items-center gap-1">
@@ -442,6 +513,11 @@ export const ProfileKycPage: React.FC = () => {
                 </span>
               )}
             </div>
+            {accountError ? (
+              <p className="text-xs font-semibold text-rose-700">
+                {accountError}
+              </p>
+            ) : null}
           </form>
         </div>
       )}

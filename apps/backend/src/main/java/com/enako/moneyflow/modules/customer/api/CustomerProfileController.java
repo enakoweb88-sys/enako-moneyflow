@@ -10,6 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,4 +51,21 @@ public class CustomerProfileController {
         @NotBlank @Size(max = 200) String displayName,
         @Size(max = 32) String phoneE164
     ) { }
+
+    @PutMapping("/me")
+    public CustomerReadService.CustomerProfile updateCustomerProfile(
+        @AuthenticationPrincipal Jwt jwt,
+        @Valid @RequestBody OnboardingRequest request
+    ) {
+        String email = jwt.getClaimAsString("email");
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("The authenticated account does not include an email address");
+        }
+        return customerReadService.createCustomerProfile(
+            UUID.fromString(jwt.getSubject()),
+            email,
+            request.displayName(),
+            request.phoneE164()
+        );
+    }
 }

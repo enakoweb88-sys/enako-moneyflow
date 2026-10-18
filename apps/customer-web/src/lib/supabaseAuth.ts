@@ -4,7 +4,13 @@ export interface AuthSession {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
-  user: { id: string; email?: string };
+  user: {
+    id: string;
+    email?: string;
+    fullName?: string;
+    phone?: string;
+    avatarId?: number;
+  };
 }
 
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -29,7 +35,13 @@ const toAuthSession = (session: Session): AuthSession => ({
   refreshToken: session.refresh_token,
   expiresAt:
     (session.expires_at ?? Math.floor(Date.now() / 1000) + 3600) * 1000,
-  user: { id: session.user.id, email: session.user.email },
+  user: {
+    id: session.user.id,
+    email: session.user.email,
+    fullName: String(session.user.user_metadata.full_name || ""),
+    phone: String(session.user.user_metadata.phone || ""),
+    avatarId: Number(session.user.user_metadata.avatar_id || 0),
+  },
 });
 
 export const restoreSession = async (): Promise<AuthSession | null> => {
@@ -95,5 +107,20 @@ export const requestPasswordReset = async (email: string) => {
 
 export const signOutSession = async () => {
   const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+};
+
+export const updateAuthProfile = async (profile: {
+  fullName: string;
+  phone: string;
+  avatarId: number;
+}) => {
+  const { error } = await supabase.auth.updateUser({
+    data: {
+      full_name: profile.fullName,
+      phone: profile.phone,
+      avatar_id: profile.avatarId,
+    },
+  });
   if (error) throw error;
 };

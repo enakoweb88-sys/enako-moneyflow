@@ -1,25 +1,87 @@
 "use client";
 
-import React, { useState } from "react";
-import { ArrowRight, ShieldCheck, UserRound, Wallet } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import { useCustomer } from "@/mock/CustomerContext";
 
-export const CustomerOnboarding: React.FC = () => {
+const steps = [
+  {
+    eyebrow: "Welcome to MoneyFlow",
+    title: "Let’s prepare your account for real transactions.",
+    description:
+      "We’ll guide you through the essential account details, identity checks and security settings needed before you move funds. Your dashboard contains only information connected to your account—never sample customer data.",
+    details: [
+      "Review the name and phone number used at registration",
+      "Choose the avatar that represents you",
+      "Create your secure MoneyFlow customer profile",
+    ],
+    action: "Set up my profile",
+    image: "0% 0%",
+    route: "profile-kyc",
+  },
+  {
+    eyebrow: "Identity verification",
+    title: "Verify who you are and unlock account services.",
+    description:
+      "MoneyFlow uses identity verification to protect customers and meet regional financial requirements. Add accurate identity details and supporting documents so our compliance team can review your account.",
+    details: [
+      "Use a valid government-issued identity document",
+      "Make sure names match your registered profile",
+      "Track verification status from your dashboard",
+    ],
+    action: "Review verification",
+    image: "100% 0%",
+    route: "profile-kyc",
+  },
+  {
+    eyebrow: "Account protection",
+    title: "Add another layer of security before money moves.",
+    description:
+      "Protect sign-ins and sensitive actions with strong credentials and multi-factor authentication. Security controls help prevent unauthorized changes and payment instructions.",
+    details: [
+      "Review active sign-in sessions",
+      "Enable multi-factor authentication when available",
+      "Keep recovery information current",
+    ],
+    action: "Review security",
+    image: "0% 100%",
+    route: "security",
+  },
+  {
+    eyebrow: "You’re ready",
+    title: "Your workspace is prepared for the next step.",
+    description:
+      "Once verification and service activation are complete, wallet balances, settlements and transfer activity will appear here directly from the secure MoneyFlow API.",
+    details: [
+      "No demo balances or transactions",
+      "Clear status for every account requirement",
+      "A single workspace for regional money movement",
+    ],
+    action: "Open my dashboard",
+    image: "100% 100%",
+  },
+];
+
+export const CustomerOnboarding = () => {
   const {
     showOnboarding,
     setShowOnboarding,
     setActiveNav,
-    user,
     completeOnboarding,
   } = useCustomer();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(0);
   const [finishing, setFinishing] = useState(false);
   const [error, setError] = useState("");
-
   if (!showOnboarding) return null;
+  const current = steps[step];
 
-  const finish = async () => {
+  const next = async () => {
     setError("");
+    if (step < steps.length - 1) {
+      if (current.route) setActiveNav(current.route);
+      setStep((value) => value + 1);
+      return;
+    }
     setFinishing(true);
     try {
       await completeOnboarding();
@@ -34,84 +96,91 @@ export const CustomerOnboarding: React.FC = () => {
     }
   };
 
-  const content = [
-    {
-      icon: UserRound,
-      title: `Welcome${user.name ? `, ${user.name}` : ""}`,
-      text: "Your MoneyFlow account starts with your own details only. No sample balances, transactions, or beneficiaries are shown.",
-      action: "Continue",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Verify your identity",
-      text: "Complete your personal profile and KYC verification before financial services are enabled.",
-      action: "Open profile",
-      route: "profile-kyc",
-    },
-    {
-      icon: ShieldCheck,
-      title: "Protect your account",
-      text: "Set up your preferred security controls. Live MFA management will be available through the authentication service.",
-      action: "Open security",
-      route: "security",
-    },
-    {
-      icon: Wallet,
-      title: "Your wallet is ready for setup",
-      text: "Balances and transactions will appear only when they are returned by the live MoneyFlow API.",
-      action: "Go to dashboard",
-    },
-  ][step - 1];
-  const Icon = content.icon;
-
-  const next = async () => {
-    if (content.route) setActiveNav(content.route);
-    if (step === 4) await finish();
-    else setStep((current) => current + 1);
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm">
-      <section className="w-full max-w-lg rounded-3xl bg-white shadow-2xl overflow-hidden">
-        <div className="h-1.5 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
-        <div className="p-7 sm:p-9">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-            <span>Getting started</span>
-            <span>{step} / 4</span>
+    <div className="fixed inset-0 z-50 grid place-items-center bg-[#06132b]/78 p-4 backdrop-blur-md">
+      <section className="grid max-h-[92dvh] w-full max-w-6xl overflow-hidden rounded-[28px] bg-white shadow-[0_32px_100px_rgba(0,10,35,.4)] lg:grid-cols-[1.05fr_.95fr]">
+        <div className="relative min-h-[300px] overflow-hidden bg-[#001f5b] lg:min-h-[700px]">
+          <div
+            className="absolute inset-0 bg-no-repeat transition-all duration-700"
+            style={{
+              backgroundImage: "url('/moneyflow-onboarding-steps.png')",
+              backgroundSize: "200% 200%",
+              backgroundPosition: current.image,
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#00132f]/80 via-transparent to-[#00132f]/10" />
+          <div className="absolute bottom-7 left-7 right-7 text-white lg:bottom-10 lg:left-10">
+            <p className="text-xs font-bold uppercase tracking-[.18em] text-[#7ce8e7]">
+              Step {step + 1} of {steps.length}
+            </p>
+            <p className="mt-2 max-w-md text-sm leading-6 text-white/78">
+              A guided setup designed to make every requirement clear before you
+              continue.
+            </p>
           </div>
-          <div className="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden">
-            <div
-              className="h-full bg-[#001f5b] transition-all"
-              style={{ width: `${step * 25}%` }}
-            />
+        </div>
+
+        <div className="relative flex min-h-0 flex-col overflow-y-auto p-7 sm:p-10 lg:p-14">
+          <button
+            type="button"
+            onClick={() => setShowOnboarding(false)}
+            className="absolute right-6 top-6 rounded-full border border-slate-200 p-2 text-slate-500 hover:bg-slate-50"
+            aria-label="Close setup guide"
+          >
+            <X size={17} />
+          </button>
+          <div className="mb-10 flex gap-2 pr-12">
+            {steps.map((_, index) => (
+              <span
+                key={index}
+                className={`h-1 flex-1 rounded-full ${index <= step ? "bg-[#008f94]" : "bg-slate-200"}`}
+              />
+            ))}
           </div>
-          <div className="mt-8 w-12 h-12 rounded-2xl bg-[#001f5b] text-[#00c2c7] flex items-center justify-center">
-            <Icon className="w-6 h-6" />
-          </div>
-          <h1 className="mt-5 text-2xl font-bold text-slate-950">
-            {content.title}
-          </h1>
-          <p className="mt-3 text-sm leading-6 text-slate-600">
-            {content.text}
+          <p className="text-[11px] font-extrabold uppercase tracking-[.16em] text-[#008f94]">
+            {current.eyebrow}
           </p>
-          {error ? (
-            <p className="mt-3 text-sm font-medium text-rose-700">{error}</p>
-          ) : null}
-          <div className="mt-9 flex items-center justify-between gap-4">
+          <h1 className="mt-4 font-serif text-4xl font-semibold leading-[1.05] tracking-[-.04em] text-[#0b1f41] sm:text-5xl">
+            {current.title}
+          </h1>
+          <p className="mt-6 text-[15px] leading-7 text-slate-600">
+            {current.description}
+          </p>
+          <div className="mt-8 border-y border-slate-200 py-2">
+            {current.details.map((detail, index) => (
+              <div
+                key={detail}
+                className="grid grid-cols-[28px_1fr] gap-3 border-b border-slate-100 py-4 last:border-0"
+              >
+                <span className="text-xs font-bold text-[#008f94]">
+                  0{index + 1}
+                </span>
+                <p className="text-sm font-medium leading-5 text-slate-700">
+                  {detail}
+                </p>
+              </div>
+            ))}
+          </div>
+          {error && (
+            <p className="mt-4 text-sm font-semibold text-rose-700">{error}</p>
+          )}
+          <div className="mt-auto flex items-center justify-between gap-4 pt-10">
             <button
               type="button"
-              onClick={() => setShowOnboarding(false)}
-              className="text-sm font-semibold text-slate-500 hover:text-slate-900"
+              disabled={step === 0}
+              onClick={() => setStep((value) => value - 1)}
+              className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 disabled:invisible"
             >
-              Skip for now
+              <ArrowLeft size={16} /> Back
             </button>
             <button
               type="button"
               onClick={next}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#001f5b] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#001744]"
+              disabled={finishing}
+              className="inline-flex items-center gap-3 rounded-xl bg-[#001f5b] px-5 py-3 text-sm font-bold text-white hover:bg-[#003078] disabled:opacity-60"
             >
-              {finishing ? "Saving your account…" : content.action}
-              <ArrowRight className="w-4 h-4" />
+              {finishing ? "Preparing dashboard…" : current.action}
+              <ArrowRight size={17} />
             </button>
           </div>
         </div>

@@ -24,6 +24,7 @@ import {
   signInWithPassword,
   signOutSession,
   signUpWithPassword,
+  updateAuthProfile,
   type AuthSession,
 } from "@/lib/supabaseAuth";
 
@@ -76,7 +77,12 @@ interface CustomerContextType {
   terminateSession: (sessionId: string) => void;
   terminateAllOtherSessions: () => void;
   toggleMfa: () => void;
-  updateProfile: (name: string, phone: string, address: string) => void;
+  updateProfile: (
+    name: string,
+    phone: string,
+    address: string,
+    avatarId: number,
+  ) => Promise<void>;
 }
 
 const CustomerContext = createContext<CustomerContextType | undefined>(
@@ -111,6 +117,14 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
   const loadApplicationProfile = async (
     session: AuthSession,
   ): Promise<"exists" | "missing" | "unavailable"> => {
+    setUser((current) => ({
+      ...current,
+      id: session.user.id,
+      email: session.user.email || current.email,
+      name: session.user.fullName || current.name,
+      phone: session.user.phone || current.phone,
+      avatarId: session.user.avatarId ?? current.avatarId,
+    }));
     const apiUrl = process.env.NEXT_PUBLIC_MONEYFLOW_API_URL;
     if (!apiUrl) return "unavailable";
     try {
@@ -126,7 +140,12 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
       setUser((current) => ({
         ...current,
         email: profile.email || session.user.email || "",
-        name: profile.displayName || current.name,
+        name:
+          (profile.displayName && profile.displayName !== profile.email
+            ? profile.displayName
+            : session.user.fullName) ||
+          profile.displayName ||
+          current.name,
       }));
       return "exists";
     } catch {
@@ -217,8 +236,12 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          displayName: user.name || session.user.email || "Customer",
-          phoneE164: user.phone || null,
+          displayName:
+            user.name ||
+            session.user.fullName ||
+            session.user.email ||
+            "Customer",
+          phoneE164: user.phone || session.user.phone || null,
         }),
       },
     );
@@ -236,6 +259,55 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
     setShowOnboarding(false);
     setActiveNav("dashboard");
+  };
+
+  const updateProfile = async (
+    name: string,
+    phone: string,
+    address: string,
+    avatarId: number,
+  ) => {
+    const session = await restoreSession();
+    if (!session)
+      throw new Error("Your session has expired. Please sign in again.");
+    const cleanName = name.trim();
+    const cleanPhone = phone.trim();
+    await updateAuthProfile({
+      fullName: cleanName,
+      phone: cleanPhone,
+      avatarId,
+    });
+
+    const apiUrl = process.env.NEXT_PUBLIC_MONEYFLOW_API_URL;
+    if (apiUrl) {
+      const response = await fetch(
+        `${apiUrl.replace(/\/$/, "")}/api/v1/customers/me`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            displayName: cleanName,
+            phoneE164: cleanPhone || null,
+          }),
+        },
+      );
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as {
+          message?: string;
+        };
+        throw new Error(payload.message || "We could not save your profile.");
+      }
+    }
+    setUser((current) => ({
+      ...current,
+      name: cleanName,
+      phone: cleanPhone,
+      address,
+      avatarId,
+    }));
   };
 
   return (
@@ -278,7 +350,7 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
         terminateSession: () => unavailable("Session management"),
         terminateAllOtherSessions: () => unavailable("Session management"),
         toggleMfa: () => unavailable("MFA changes"),
-        updateProfile: () => unavailable("Profile updates"),
+        updateProfile,
       }}
     >
       {children}
