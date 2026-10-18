@@ -90,9 +90,9 @@ export const DashboardPage = () => {
           <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(#edbbb8_1px,transparent_1px)] [background-size:22px_22px]" />
           <IllustrationReel
             source="/moneyflow-robot-reel.png"
-            animated
+            frame={messageIndex}
             label="MoneyFlow robot saving, investing and protecting your account"
-            className="absolute inset-4 sm:inset-7"
+            className="dashboard-robot absolute inset-4 sm:inset-7"
           />
           <div className="absolute bottom-5 left-5 rounded-full bg-white/90 px-3 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-[#c35359] shadow-sm backdrop-blur">
             Live guidance

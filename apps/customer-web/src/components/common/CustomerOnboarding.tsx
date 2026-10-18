@@ -112,8 +112,8 @@ export const CustomerOnboarding = () => {
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-[#06132b]/78 p-4 backdrop-blur-md">
-      <section className="grid max-h-[92dvh] w-full max-w-6xl overflow-hidden rounded-[28px] bg-white shadow-[0_32px_100px_rgba(0,10,35,.4)] lg:grid-cols-[1.05fr_.95fr]">
-        <div className="relative flex min-h-[300px] flex-col overflow-hidden bg-[#fff9f6] p-7 lg:min-h-[700px] lg:p-10">
+      <section className="grid max-h-[calc(100dvh-2rem)] w-full max-w-6xl overflow-y-auto rounded-[28px] bg-white shadow-[0_32px_100px_rgba(0,10,35,.4)] lg:h-[min(760px,calc(100dvh-2rem))] lg:grid-cols-[1.05fr_.95fr] lg:overflow-hidden">
+        <div className="relative flex min-h-[280px] flex-col overflow-hidden bg-[#fff9f6] p-7 lg:min-h-0 lg:p-10">
           <div className="absolute inset-0 opacity-50 [background-image:radial-gradient(#f2c7c2_1px,transparent_1px)] [background-size:22px_22px]" />
           <IllustrationReel
             source="/moneyflow-verification-reel.png"
@@ -134,7 +134,7 @@ export const CustomerOnboarding = () => {
           </div>
         </div>
 
-        <div className="relative flex min-h-0 flex-col overflow-y-auto p-7 sm:p-10 lg:p-14">
+        <div className="relative flex min-h-0 flex-col overflow-visible p-7 sm:p-10 lg:overflow-y-auto lg:p-14">
           <button
             type="button"
             onClick={() => setShowOnboarding(false)}
@@ -178,7 +178,7 @@ export const CustomerOnboarding = () => {
           {error && (
             <p className="mt-4 text-sm font-semibold text-rose-700">{error}</p>
           )}
-          <div className="mt-auto flex items-center justify-between gap-4 pt-10">
+          <div className="sticky bottom-0 z-10 -mx-2 mt-auto flex flex-wrap items-center justify-between gap-4 border-t border-slate-100 bg-white/95 px-2 pb-1 pt-5 backdrop-blur-sm">
             <button
               type="button"
               disabled={step === 0}
@@ -187,7 +187,7 @@ export const CustomerOnboarding = () => {
             >
               <ArrowLeft size={16} /> Back
             </button>
-            <div className="flex items-center gap-3">
+            <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
               {onboardingOrigin === "dashboard" && current.route ? (
                 <button
                   type="button"

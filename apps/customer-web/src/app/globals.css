@@ -35,9 +35,14 @@
   25%, 100% { opacity: 0; transform: translateY(5px) scale(.985); }
 }
 .dashboard-live-message { animation: dashboardMessage .45s ease both; }
+.dashboard-robot { animation: dashboardRobotFloat 3.8s ease-in-out infinite; }
 @keyframes dashboardMessage {
   from { opacity: 0; transform: translateY(7px); }
   to { opacity: 1; transform: translateY(0); }
+}
+@keyframes dashboardRobotFloat {
+  0%, 100% { transform: translateY(0) rotate(-.4deg); }
+  50% { transform: translateY(-8px) rotate(.5deg); }
 }
 
 .font-serif-accent {
