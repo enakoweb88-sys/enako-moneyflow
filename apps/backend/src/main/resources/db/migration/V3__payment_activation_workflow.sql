@@ -1,22 +1,37 @@
 -- Customer payment-activation workflow. Browser roles have no direct table access;
 -- all access is mediated by the authenticated backend API.
 
-CREATE TYPE payment_activation_status AS ENUM (
-    'draft',
-    'submitted',
-    'in_review',
-    'approved',
-    'changes_requested',
-    'rejected'
-);
+-- The staging schema originally received these objects before Flyway tracked V3.
+-- duplicate_object handling lets Flyway adopt that matching legacy schema while
+-- preserving normal creation on clean databases.
+DO $$
+BEGIN
+    CREATE TYPE payment_activation_status AS ENUM (
+        'draft',
+        'submitted',
+        'in_review',
+        'approved',
+        'changes_requested',
+        'rejected'
+    );
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END
+$$;
 
-CREATE TYPE payment_activation_channel AS ENUM (
-    'mtn_momo',
-    'orange_money',
-    'bank_settlement'
-);
+DO $$
+BEGIN
+    CREATE TYPE payment_activation_channel AS ENUM (
+        'mtn_momo',
+        'orange_money',
+        'bank_settlement'
+    );
+EXCEPTION
+    WHEN duplicate_object THEN NULL;
+END
+$$;
 
-CREATE TABLE payment_activation_requests (
+CREATE TABLE IF NOT EXISTS payment_activation_requests (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     profile_id UUID NOT NULL REFERENCES profiles (id) ON DELETE RESTRICT,
     business_use VARCHAR(40) NOT NULL,
@@ -44,15 +59,15 @@ CREATE TABLE payment_activation_requests (
     )
 );
 
-CREATE TABLE payment_activation_channels (
+CREATE TABLE IF NOT EXISTS payment_activation_channels (
     payment_activation_request_id UUID NOT NULL REFERENCES payment_activation_requests (id) ON DELETE CASCADE,
     channel payment_activation_channel NOT NULL,
     PRIMARY KEY (payment_activation_request_id, channel)
 );
 
-CREATE INDEX payment_activation_requests_profile_created_idx
+CREATE INDEX IF NOT EXISTS payment_activation_requests_profile_created_idx
     ON payment_activation_requests (profile_id, created_at DESC);
-CREATE INDEX payment_activation_requests_review_queue_idx
+CREATE INDEX IF NOT EXISTS payment_activation_requests_review_queue_idx
     ON payment_activation_requests (status, submitted_at ASC)
     WHERE status IN ('submitted', 'in_review', 'changes_requested');
 
