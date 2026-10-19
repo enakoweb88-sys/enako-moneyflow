@@ -41,12 +41,36 @@ server:
   port: ${PORT:8080}
 
 app:
+  payments:
+    pilot:
+      minimum-xaf: ${APP_PAYMENTS_PILOT_MINIMUM_XAF:1}
+      maximum-xaf: ${APP_PAYMENTS_PILOT_MAXIMUM_XAF:1000}
+      daily-maximum-xaf: ${APP_PAYMENTS_PILOT_DAILY_MAXIMUM_XAF:5000}
+    providers:
+      mtn:
+        enabled: ${MTN_MOMO_ENABLED:false}
+        base-url: ${MTN_MOMO_BASE_URL:https://momoapi.momo.africa}
+        target-environment: ${MTN_MOMO_TARGET_ENVIRONMENT:mtncameroon}
+        callback-base-url: ${MTN_MOMO_CALLBACK_URL:}
+        subscription-key: ${PRIMARY_KEY:}
+        api-user: ${DEPOSIT_API_USER:}
+        api-key: ${DEPOSIT_API_KEY:}
+      pixipay:
+        enabled: ${PIX_PAY_ENABLED:false}
+        base-url: ${PIX_PAY_BASE_URL:}
+        callback-base-url: ${PIX_PAY_CALLBACK_URL:}
+        api-key: ${PIX_PAY_API_KEY:}
+        orange-cm-cashin-service-id: ${PIX_PAY_ORANGE_CM_CASHIN_SERVICE_ID:}
+    webhooks:
+      delivery-enabled: ${APP_PAYMENTS_WEBHOOK_DELIVERY_ENABLED:true}
+      worker-delay-ms: ${APP_PAYMENTS_WEBHOOK_WORKER_DELAY_MS:15000}
   email:
     resend:
       api-key: ${APP_EMAIL_RESEND_API_KEY:}
       from: ${APP_EMAIL_FROM:}
       reply-to: ${APP_EMAIL_REPLY_TO:}
   security:
+    data-encryption-secret: ${APP_DATA_ENCRYPTION_SECRET:}
     supabase:
       # Set APP_SECURITY_SUPABASE_ISSUER_URI to https://<project-ref>.supabase.co/auth/v1
       # in a deployed environment. Until then, protected endpoints remain inaccessible.

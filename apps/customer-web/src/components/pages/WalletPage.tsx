@@ -1,416 +1,324 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import React, { useMemo, useState } from "react";
+import { ArrowDownLeft, Check, Copy, Download } from "lucide-react";
+import { toast } from "sonner";
 import { useCustomer } from "@/mock/CustomerContext";
 import { formatMoney } from "@/lib/format";
-import {
-  Wallet,
-  ArrowDownLeft,
-  ArrowUpRight,
-  Download,
-  Building,
-  ShieldCheck,
-  CreditCard,
-  Layers,
-  Copy,
-  CheckCircle2,
-} from "lucide-react";
-import { toast } from "sonner";
 
 export const WalletPage: React.FC = () => {
   const { wallet, activities, setActiveNav } = useCustomer();
-
   const [dateFilter, setDateFilter] = useState("ALL");
   const [typeFilter, setTypeFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const handleCopy = (text: string, fieldName: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(fieldName);
-    toast.success(`${fieldName} copied to clipboard`);
-    setTimeout(() => setCopiedField(null), 2000);
+  const filteredActivities = useMemo(
+    () =>
+      activities.filter((transaction) => {
+        const typeMatches =
+          typeFilter === "ALL" ||
+          (typeFilter === "IN" && transaction.direction === "in") ||
+          (typeFilter === "OUT" && transaction.direction === "out");
+        return (
+          typeMatches &&
+          (statusFilter === "ALL" || transaction.status === statusFilter)
+        );
+      }),
+    [activities, statusFilter, typeFilter],
+  );
+
+  const copy = async (value: string, label: string) => {
+    await navigator.clipboard.writeText(value);
+    setCopiedField(label);
+    toast.success(`${label} copied`);
+    window.setTimeout(() => setCopiedField(null), 1800);
   };
 
-  const filteredActivities = useMemo(() => {
-    return activities.filter((tx) => {
-      const matchType =
-        typeFilter === "ALL" ||
-        (typeFilter === "IN" && tx.direction === "in") ||
-        (typeFilter === "OUT" && tx.direction === "out");
-      const matchStatus = statusFilter === "ALL" || tx.status === statusFilter;
-      return matchType && matchStatus;
-    });
-  }, [activities, typeFilter, statusFilter]);
-
-  const handleDownloadCsv = () => {
-    const csvContent =
-      "data:text/csv;charset=utf-8," +
-      "Date,Description,Direction,Amount,Running Balance,Status\n" +
-      activities
-        .map(
-          (a) =>
-            `"${a.date}","${a.description}","${a.direction}","${a.amountFormatted}","${a.runningBalance}","${a.status}"`,
-        )
-        .join("\n");
-
-    const encodedUri = encodeURI(csvContent);
+  const downloadStatement = () => {
+    const rows = activities.map((item) =>
+      [
+        item.date,
+        item.description,
+        item.direction,
+        item.amountFormatted,
+        item.runningBalance,
+        item.status,
+      ]
+        .map((value) => `"${value}"`)
+        .join(","),
+    );
+    const content = [
+      "Date,Description,Direction,Amount,Running Balance,Status",
+      ...rows,
+    ].join("\n");
     const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `E_NAKO_Wallet_Statement_2026.csv`);
+    link.href = `data:text/csv;charset=utf-8,${encodeURIComponent(content)}`;
+    link.download = "E_NAKO_Wallet_Statement_2026.csv";
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-
-    toast.success("Official Account Statement CSV downloaded successfully.");
+    link.remove();
+    toast.success("Official account statement downloaded");
   };
 
-  const getStatusBadgeVariant = (status: (typeof activities)[0]["status"]) => {
-    switch (status) {
-      case "Completed":
-        return "success";
-      case "Pending":
-      case "Processing":
-        return "warning";
-      case "Failed":
-      default:
-        return "danger";
-    }
-  };
+  const settlementDetails = [
+    ["Bank", "Afriland First Bank"],
+    ["Account number (RIB)", "10005 00001 02384910283 45"],
+    ["SWIFT / BIC", "AFRICMCA"],
+    ["Beneficiary", "E NAKO COMPANY PLC"],
+  ];
 
   return (
-    <div className="space-y-6 select-none font-sans">
-      <PageHeader
-        title="Wallet & Statements"
-        subtitle="Complete accounting ledger of your XAF balances, deposits, and withdrawal disbursements"
-        action={
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownloadCsv}
-              className="border-slate-300 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5 h-9"
+    <div className="mx-auto max-w-7xl space-y-10 pb-14">
+      <section className="relative overflow-hidden rounded-[30px] bg-[#171b29] px-7 py-8 text-white sm:px-10 sm:py-10">
+        <div className="wallet-orbit wallet-orbit-one" />
+        <div className="wallet-orbit wallet-orbit-two" />
+        <div className="relative z-10 grid gap-10 lg:grid-cols-[1.25fr_.75fr] lg:items-end">
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="wallet-live-dot" />
+              <p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#ffaaa5]">
+                Wallet connected
+              </p>
+            </div>
+            <p className="mt-7 text-sm text-white/58">Available balance</p>
+            <p className="money-number mt-2 text-5xl font-bold tracking-[-.055em] sm:text-6xl">
+              {formatMoney(wallet.available, "XAF")}
+            </p>
+            <p className="mt-4 max-w-xl text-sm leading-6 text-white/62">
+              Your live XAF position, settlement holds and verified ledger move
+              together in one account.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <button
+                onClick={() => setActiveNav("buy-xaf")}
+                className="rounded-xl bg-[#ef7775] px-4 py-3 text-xs font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#e36766]"
+              >
+                Fund account
+              </button>
+              <button
+                onClick={() => setActiveNav("send-withdraw")}
+                className="rounded-xl border border-white/20 bg-white/7 px-4 py-3 text-xs font-bold text-white transition hover:bg-white/12"
+              >
+                Withdraw funds
+              </button>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-x-8 gap-y-6 border-l border-white/12 pl-0 lg:pl-9">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[.12em] text-white/42">
+                Ledger balance
+              </p>
+              <p className="money-number mt-2 text-xl font-bold">
+                {formatMoney(wallet.balance, "XAF")}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[.12em] text-white/42">
+                Settlement hold
+              </p>
+              <p className="money-number mt-2 text-xl font-bold text-[#ffaaa5]">
+                {formatMoney(wallet.held, "XAF")}
+              </p>
+            </div>
+            <div className="col-span-2 border-t border-white/12 pt-5">
+              <div className="flex items-center justify-between text-[11px] text-white/55">
+                <span>Account liquidity</span>
+                <span className="money-number font-bold text-white">100%</span>
+              </div>
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+                <div className="wallet-flow-bar h-full w-full rounded-full bg-gradient-to-r from-[#ef7775] via-[#ffb1a6] to-[#72ded5]" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-8 lg:grid-cols-[.72fr_1.28fr]">
+        <div className="flex flex-col justify-between bg-[#f8ece5] p-7 sm:p-8">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#b15357]">
+              Settlement corridor
+            </p>
+            <h2 className="mt-4 text-3xl font-bold tracking-[-.04em] text-[#292321]">
+              Official inward-wire details.
+            </h2>
+            <p className="mt-4 text-sm leading-6 text-[#6e605a]">
+              Use these verified instructions when funding through the CEMAC
+              clearing corridor. Tap any value to copy it.
+            </p>
+          </div>
+          <div className="mt-10 flex items-center gap-2 text-xs font-bold text-[#3b716e]">
+            <span className="wallet-live-dot !h-2 !w-2" /> Corridor available
+          </div>
+        </div>
+
+        <div className="border-y border-[#dfd8d3]">
+          {settlementDetails.map(([label, value]) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => void copy(value, label)}
+              className="group grid w-full grid-cols-[minmax(120px,.45fr)_1fr_auto] items-center gap-4 border-b border-[#ebe5e1] px-2 py-5 text-left last:border-0 hover:bg-[#fffaf7] sm:px-4"
             >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span>Export Statement</span>
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => setActiveNav("buy-xaf")}
-              className="bg-[#001f5b] hover:bg-[#001744] text-white flex items-center gap-1.5 h-9"
+              <span className="text-[10px] font-bold uppercase tracking-[.1em] text-slate-400">
+                {label}
+              </span>
+              <strong className="money-number break-all text-sm text-[#292f3d]">
+                {value}
+              </strong>
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-[#f5eee9] text-[#9f5557] transition group-hover:bg-[#ef7775] group-hover:text-white">
+                {copiedField === label ? (
+                  <Check size={14} />
+                ) : (
+                  <Copy size={14} />
+                )}
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section>
+        <div className="flex flex-col justify-between gap-5 border-b border-slate-200 pb-6 sm:flex-row sm:items-end">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#b15357]">
+              Audited ledger
+            </p>
+            <h2 className="mt-2 text-3xl font-bold tracking-[-.04em] text-[#202838]">
+              Account statement
+            </h2>
+            <p className="mt-2 text-sm text-slate-500">
+              {filteredActivities.length} verified ledger entries in the current
+              view.
+            </p>
+          </div>
+          <button
+            onClick={downloadStatement}
+            className="inline-flex items-center gap-2 self-start rounded-xl border border-slate-300 px-4 py-3 text-xs font-bold text-slate-700 transition hover:border-[#cf7772] hover:text-[#a84f53]"
+          >
+            <Download size={14} /> Export statement
+          </button>
+        </div>
+
+        <div className="flex flex-wrap gap-3 border-b border-slate-200 py-5">
+          {[
+            [
+              "Period",
+              dateFilter,
+              setDateFilter,
+              [
+                ["ALL", "All activity"],
+                ["THIS_MONTH", "This month"],
+                ["LAST_30", "Last 30 days"],
+              ],
+            ],
+            [
+              "Direction",
+              typeFilter,
+              setTypeFilter,
+              [
+                ["ALL", "All directions"],
+                ["IN", "Deposits"],
+                ["OUT", "Withdrawals"],
+              ],
+            ],
+            [
+              "Status",
+              statusFilter,
+              setStatusFilter,
+              [
+                ["ALL", "All statuses"],
+                ["Completed", "Completed"],
+                ["Pending", "Pending"],
+                ["Processing", "Processing"],
+                ["Failed", "Failed"],
+              ],
+            ],
+          ].map(([label, value, setter, options]) => (
+            <label
+              key={label as string}
+              className="flex items-center gap-2 rounded-full bg-[#f7f4f1] px-3 py-2 text-[11px] font-bold text-slate-500"
             >
-              <ArrowDownLeft className="w-3.5 h-3.5" />
-              <span>Fund Account</span>
-            </Button>
-          </div>
-        }
-      />
-
-      {/* ── 1. BALANCE SUMMARY CARDS WITH BRAND PALETTE ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        {/* Total Ledger Balance */}
-        <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Total Ledger Balance
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-[#001f5b]/10 text-[#001f5b] flex items-center justify-center">
-              <Wallet className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-3xl font-extrabold text-slate-900 font-mono tracking-tight">
-            {formatMoney(wallet.balance, "XAF")}
-          </div>
-          <span className="text-xs text-slate-400 mt-1 block">
-            Audited double-entry ledger balance
-          </span>
+              {label as string}
+              <select
+                value={value as string}
+                onChange={(event) =>
+                  (setter as React.Dispatch<React.SetStateAction<string>>)(
+                    event.target.value,
+                  )
+                }
+                className="bg-transparent font-bold text-slate-800 outline-none"
+              >
+                {(options as string[][]).map(([optionValue, optionLabel]) => (
+                  <option key={optionValue} value={optionValue}>
+                    {optionLabel}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ))}
         </div>
 
-        {/* Available Balance */}
-        <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Available Float
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-[#001f5b]/10 text-[#001f5b] flex items-center justify-center">
-              <Layers className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-3xl font-extrabold text-slate-900 font-mono tracking-tight">
-            {formatMoney(wallet.available, "XAF")}
-          </div>
-          <span className="text-xs text-slate-500 font-semibold mt-1 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#00c2c7]" />
-            Liquid for instant mobile money payouts
-          </span>
-        </div>
-
-        {/* Held Amount in Escrow */}
-        <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-2xs">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-              Held in Escrow
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="text-3xl font-extrabold text-slate-700 font-mono tracking-tight">
-            {formatMoney(wallet.held, "XAF")}
-          </div>
-          <span className="text-xs text-slate-400 mt-1 block">
-            Pending settlement clearing holds
-          </span>
-        </div>
-      </div>
-
-      {/* ── 2. DEDICATED BEAC ESCROW CLEARING WIRE DETAILS ── */}
-      <Card className="border-slate-200/90 bg-white rounded-2xl shadow-2xs overflow-hidden">
-        <CardHeader className="bg-slate-50/80 border-b border-slate-200/80 p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Building className="w-4 h-4 text-[#001f5b]" />
-              <CardTitle className="text-sm font-bold text-slate-900">
-                Official Settlement Account Details (Inward Wires)
-              </CardTitle>
-            </div>
-            <span className="text-xs font-mono text-[#006e72] font-semibold flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#00c2c7]" />
-              CEMAC Clearing Corridor
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="p-5 sm:p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-mono">
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
-              <div>
-                <span className="text-slate-400 block text-[10px] font-sans font-bold uppercase tracking-wider">
-                  Bank Name
-                </span>
-                <span className="font-bold text-slate-900">
-                  Afriland First Bank
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleCopy("Afriland First Bank", "Bank Name")}
-                className="text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                {copiedField === "Bank Name" ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#00c2c7]" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
-              <div>
-                <span className="text-slate-400 block text-[10px] font-sans font-bold uppercase tracking-wider">
-                  Account Number (RIB)
-                </span>
-                <span className="font-bold text-slate-900">
-                  10005 00001 02384910283 45
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleCopy("10005 00001 02384910283 45", "RIB")}
-                className="text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                {copiedField === "RIB" ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#00c2c7]" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
-              <div>
-                <span className="text-slate-400 block text-[10px] font-sans font-bold uppercase tracking-wider">
-                  SWIFT / BIC
-                </span>
-                <span className="font-bold text-slate-900">AFRICMCA</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleCopy("AFRICMCA", "SWIFT")}
-                className="text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                {copiedField === "SWIFT" ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#00c2c7]" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between">
-              <div>
-                <span className="text-slate-400 block text-[10px] font-sans font-bold uppercase tracking-wider">
-                  Beneficiary Entity
-                </span>
-                <span className="font-bold text-slate-900">
-                  E NAKO COMPANY PLC
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleCopy("E NAKO COMPANY PLC", "Beneficiary")}
-                className="text-slate-400 hover:text-slate-700 cursor-pointer"
-              >
-                {copiedField === "Beneficiary" ? (
-                  <CheckCircle2 className="w-4 h-4 text-[#00c2c7]" />
-                ) : (
-                  <Copy className="w-4 h-4" />
-                )}
-              </button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ── 3. TRANSACTIONAL STATEMENT TABLE ── */}
-      <Card className="border-slate-200/90 shadow-2xs rounded-2xl overflow-hidden">
-        <CardHeader className="border-b border-slate-100 p-5 sm:p-6 bg-white">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <CardTitle className="text-base font-bold text-slate-900">
-                Audited Accounting Statement ({filteredActivities.length})
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500 mt-0.5">
-                Double-entry ledger records formatted using BEAC/CEMAC spacing
-                standards
-              </CardDescription>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadCsv}
-                className="h-8 text-xs font-semibold"
-              >
-                <Download className="w-3.5 h-3.5 mr-1 text-slate-500" />
-                CSV Export
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-5 sm:p-6 space-y-4">
-          {/* Filter Row */}
-          <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-wrap items-center gap-4 text-xs font-sans">
-            <div>
-              <label className="block text-slate-500 uppercase font-semibold text-[10px] mb-1">
-                Time Range
-              </label>
-              <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="h-8 px-2.5 bg-white border border-slate-300 rounded-lg text-xs"
-              >
-                <option value="ALL">All Recorded Activity</option>
-                <option value="THIS_MONTH">This Month (October 2026)</option>
-                <option value="LAST_30">Last 30 Days</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-slate-500 uppercase font-semibold text-[10px] mb-1">
-                Direction
-              </label>
-              <select
-                value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="h-8 px-2.5 bg-white border border-slate-300 rounded-lg text-xs"
-              >
-                <option value="ALL">All Directions (+ / −)</option>
-                <option value="IN">Inward Deposits (+)</option>
-                <option value="OUT">Outward Withdrawals (−)</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-slate-500 uppercase font-semibold text-[10px] mb-1">
-                Settlement Status
-              </label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-8 px-2.5 bg-white border border-slate-300 rounded-lg text-xs"
-              >
-                <option value="ALL">All Statuses</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-                <option value="Processing">Processing</option>
-                <option value="Failed">Failed</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Statement Table */}
-          <div className="overflow-x-auto border border-slate-200/90 rounded-xl">
-            <table className="w-full text-left text-sm font-mono">
-              <thead className="bg-slate-50 text-slate-500 text-[10px] font-bold uppercase tracking-wider border-b border-slate-200">
+        {filteredActivities.length ? (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-left text-sm">
+              <thead className="text-[10px] font-bold uppercase tracking-[.1em] text-slate-400">
                 <tr>
-                  <th className="py-3 px-6">Posting Date</th>
-                  <th className="py-3 px-6 font-sans">Transaction Details</th>
-                  <th className="py-3 px-6 text-right">
-                    Debit / Credit Amount
-                  </th>
-                  <th className="py-3 px-6 text-right">Running Balance</th>
-                  <th className="py-3 px-6 font-sans text-center">Status</th>
+                  <th className="py-4">Date</th>
+                  <th>Transaction</th>
+                  <th className="text-right">Amount</th>
+                  <th className="text-right">Balance</th>
+                  <th className="text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs">
-                {filteredActivities.map((tx) => (
+              <tbody>
+                {filteredActivities.map((item) => (
                   <tr
-                    key={tx.id}
-                    className="hover:bg-slate-50/80 transition-colors"
+                    key={item.id}
+                    className="group border-t border-slate-100 transition hover:bg-[#fffaf7]"
                   >
-                    <td className="py-3.5 px-6 text-slate-600 font-sans">
-                      {tx.date}
-                    </td>
-                    <td className="py-3.5 px-6 font-sans font-semibold text-slate-900">
-                      {tx.description}
+                    <td className="py-5 text-xs text-slate-500">{item.date}</td>
+                    <td className="font-semibold text-slate-800">
+                      {item.description}
                     </td>
                     <td
-                      className={`py-3.5 px-6 text-right font-bold text-sm ${
-                        tx.direction === "in"
-                          ? "text-[#006e72]"
-                          : "text-slate-900"
-                      }`}
+                      className={`money-number text-right font-bold ${item.direction === "in" ? "text-emerald-700" : "text-slate-900"}`}
                     >
-                      {tx.amountFormatted}
+                      {item.amountFormatted}
                     </td>
-                    <td className="py-3.5 px-6 text-right text-slate-500">
-                      {tx.runningBalance}
+                    <td className="money-number text-right text-slate-500">
+                      {item.runningBalance}
                     </td>
-                    <td className="py-3.5 px-6 font-sans text-center">
-                      <Badge variant={getStatusBadgeVariant(tx.status)}>
-                        {tx.status}
-                      </Badge>
+                    <td className="text-right">
+                      <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-600">
+                        {item.status}
+                      </span>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </CardContent>
-      </Card>
+        ) : (
+          <div className="relative overflow-hidden border-b border-slate-200 py-16 text-center">
+            <div className="wallet-scan-line" />
+            <p className="text-sm font-bold text-slate-700">
+              Your live ledger is ready.
+            </p>
+            <p className="mx-auto mt-2 max-w-md text-xs leading-5 text-slate-500">
+              Deposits, withdrawals and settlement updates will flow into this
+              statement automatically.
+            </p>
+            <button
+              onClick={() => setActiveNav("buy-xaf")}
+              className="mt-6 inline-flex items-center gap-2 text-xs font-bold text-[#ae5558]"
+            >
+              <ArrowDownLeft size={14} /> Make the first deposit
+            </button>
+          </div>
+        )}
+      </section>
     </div>
   );
 };

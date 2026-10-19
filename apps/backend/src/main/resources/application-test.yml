@@ -14,3 +14,8 @@ spring:
     show-sql: false
   flyway:
     enabled: false
+
+app:
+  payments:
+    webhooks:
+      delivery-enabled: false

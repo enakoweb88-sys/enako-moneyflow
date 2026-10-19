@@ -33,7 +33,7 @@ export const CustomerHeader: React.FC = () => {
     toggleLanguage,
     setActiveNav,
     environment,
-    setEnvironment,
+    requestEnvironment,
     notifications,
   } = useCustomer();
 
@@ -150,13 +150,22 @@ export const CustomerHeader: React.FC = () => {
               You&apos;re testing in a sandbox. No real funds move here.
             </span>
           </div>
-          <button
-            type="button"
-            onClick={() => setEnvironment("live")}
-            className="text-[#00c2c7] hover:text-[#38e1e5] font-semibold underline underline-offset-2 transition-colors cursor-pointer text-[11px]"
-          >
-            Switch to Live Account
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveNav("sandbox-lab")}
+              className="hidden font-semibold text-white/80 transition hover:text-white sm:inline"
+            >
+              Open test lab
+            </button>
+            <button
+              type="button"
+              onClick={() => requestEnvironment("live")}
+              className="text-[#00c2c7] hover:text-[#38e1e5] font-semibold underline underline-offset-2 transition-colors cursor-pointer text-[11px]"
+            >
+              Switch to Live Account
+            </button>
+          </div>
         </div>
       )}
 
@@ -244,7 +253,7 @@ export const CustomerHeader: React.FC = () => {
                         <span>
                           {environment === "live"
                             ? "Switch to sandbox"
-                            : "Switch to sandbox"}
+                            : "Switch environment"}
                         </span>
                       </div>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600" />
@@ -259,7 +268,7 @@ export const CustomerHeader: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            setEnvironment("sandbox");
+                            requestEnvironment("sandbox");
                             setShowEnvSubmenu(false);
                             setWorkspaceMenuOpen(false);
                           }}
@@ -277,7 +286,7 @@ export const CustomerHeader: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => {
-                            setEnvironment("live");
+                            requestEnvironment("live");
                             setShowEnvSubmenu(false);
                             setWorkspaceMenuOpen(false);
                           }}

@@ -9,6 +9,7 @@ export interface AuthSession {
     email?: string;
     fullName?: string;
     phone?: string;
+    phoneVerified?: boolean;
     avatarId?: number;
   };
 }
@@ -39,7 +40,8 @@ const toAuthSession = (session: Session): AuthSession => ({
     id: session.user.id,
     email: session.user.email,
     fullName: String(session.user.user_metadata.full_name || ""),
-    phone: String(session.user.user_metadata.phone || ""),
+    phone: session.user.phone || String(session.user.user_metadata.phone || ""),
+    phoneVerified: Boolean(session.user.phone_confirmed_at),
     avatarId: Number(session.user.user_metadata.avatar_id || 0),
   },
 });
@@ -105,6 +107,18 @@ export const requestPasswordReset = async (email: string) => {
   if (error) throw error;
 };
 
+export const updatePassword = async (password: string) => {
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+};
+
+export const onPasswordRecovery = (callback: () => void) => {
+  const { data } = supabase.auth.onAuthStateChange((event) => {
+    if (event === "PASSWORD_RECOVERY") callback();
+  });
+  return () => data.subscription.unsubscribe();
+};
+
 export const signOutSession = async () => {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
@@ -121,6 +135,45 @@ export const updateAuthProfile = async (profile: {
       phone: profile.phone,
       avatar_id: profile.avatarId,
     },
+  });
+  if (error) throw error;
+};
+
+export const beginTotpEnrollment = async () => {
+  const { data, error } = await supabase.auth.mfa.enroll({
+    factorType: "totp",
+    friendlyName: "E-NAKO MoneyFlow",
+  });
+  if (error) throw error;
+  return {
+    factorId: data.id,
+    qrCode: data.totp.qr_code,
+    secret: data.totp.secret,
+  };
+};
+
+export const verifyTotpEnrollment = async (factorId: string, code: string) => {
+  const { data: challenge, error: challengeError } =
+    await supabase.auth.mfa.challenge({ factorId });
+  if (challengeError) throw challengeError;
+  const { error } = await supabase.auth.mfa.verify({
+    factorId,
+    challengeId: challenge.id,
+    code,
+  });
+  if (error) throw error;
+};
+
+export const beginPhoneVerification = async (phone: string) => {
+  const { error } = await supabase.auth.updateUser({ phone });
+  if (error) throw error;
+};
+
+export const verifyPhoneChange = async (phone: string, token: string) => {
+  const { error } = await supabase.auth.verifyOtp({
+    phone,
+    token,
+    type: "phone_change",
   });
   if (error) throw error;
 };

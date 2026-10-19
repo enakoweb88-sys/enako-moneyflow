@@ -25,6 +25,11 @@ import {
   signOutSession,
   signUpWithPassword,
   updateAuthProfile,
+  beginTotpEnrollment,
+  verifyTotpEnrollment,
+  beginPhoneVerification,
+  verifyPhoneChange,
+  onPasswordRecovery,
   type AuthSession,
 } from "@/lib/supabaseAuth";
 
@@ -49,6 +54,8 @@ interface CustomerContextType {
   toggleLanguage: () => void;
   environment: CustomerEnvironment;
   setEnvironment: (env: CustomerEnvironment) => void;
+  requestEnvironment: (env: CustomerEnvironment) => void;
+  liveEligible: boolean;
   showOnboarding: boolean;
   setShowOnboarding: (show: boolean) => void;
   onboardingOrigin: "registration" | "dashboard";
@@ -72,13 +79,21 @@ interface CustomerContextType {
     name: string,
     provider: CustomerBeneficiary["provider"],
     account: string,
-  ) => void;
-  removeBeneficiary: (id: string) => void;
+  ) => Promise<void>;
+  removeBeneficiary: (id: string) => Promise<void>;
   uploadDocument: (name: string, type: string) => void;
   markAllNotificationsRead: () => void;
   terminateSession: (sessionId: string) => void;
   terminateAllOtherSessions: () => void;
   toggleMfa: () => void;
+  beginMfaEnrollment: () => Promise<{
+    factorId: string;
+    qrCode: string;
+    secret: string;
+  }>;
+  verifyMfaEnrollment: (factorId: string, code: string) => Promise<void>;
+  beginPhoneVerification: (phone: string) => Promise<void>;
+  verifyPhoneVerification: (phone: string, code: string) => Promise<void>;
   updateProfile: (
     name: string,
     phone: string,
@@ -103,6 +118,7 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
   const [language, setLanguage] = useState<"EN" | "FR">("EN");
   const [environment, setEnvironment] =
     useState<CustomerEnvironment>("sandbox");
+  const liveEligible = false;
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingOrigin, setOnboardingOrigin] = useState<
     "registration" | "dashboard"
@@ -110,7 +126,7 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<CustomerUser>(INITIAL_CUSTOMER_USER);
   const [wallet] = useState<CustomerWallet>(INITIAL_WALLET);
   const [activities] = useState<TransactionActivity[]>(INITIAL_ACTIVITIES);
-  const [beneficiaries] = useState<CustomerBeneficiary[]>(
+  const [beneficiaries, setBeneficiaries] = useState<CustomerBeneficiary[]>(
     INITIAL_BENEFICIARIES,
   );
   const [documents] = useState<CustomerDocument[]>(INITIAL_DOCUMENTS);
@@ -128,6 +144,7 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
       email: session.user.email || current.email,
       name: session.user.fullName || current.name,
       phone: session.user.phone || current.phone,
+      phoneVerified: session.user.phoneVerified ?? current.phoneVerified,
       avatarId: session.user.avatarId ?? current.avatarId,
     }));
     const apiUrl = process.env.NEXT_PUBLIC_MONEYFLOW_API_URL;
@@ -165,12 +182,26 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   useEffect(() => {
+    const savedEnvironment = window.localStorage.getItem(
+      "moneyflow-environment",
+    );
+    // Restore the explicitly selected environment during client hydration.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (savedEnvironment === "sandbox") setEnvironment("sandbox");
     void (async () => {
       const session = await restoreSession();
       if (session) {
         setIsLoggedIn(true);
         const profileState = await loadApplicationProfile(session);
-        setActiveNav("dashboard");
+        const savedPage = window.localStorage.getItem("moneyflow-active-page");
+        setActiveNav(
+          savedPage &&
+            !["landing", "login", "register", "confirm-email"].includes(
+              savedPage,
+            )
+            ? savedPage
+            : "dashboard",
+        );
         if (profileState === "missing") {
           setOnboardingOrigin("registration");
           setShowOnboarding(true);
@@ -179,6 +210,103 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
       setAuthLoading(false);
     })();
   }, []);
+
+  useEffect(
+    () =>
+      onPasswordRecovery(() => {
+        setIsLoggedIn(true);
+        setActiveNav("reset-password");
+      }),
+    [],
+  );
+
+  useEffect(() => {
+    if (isLoggedIn && activeNav !== "reset-password")
+      window.localStorage.setItem("moneyflow-active-page", activeNav);
+  }, [activeNav, isLoggedIn]);
+
+  const beneficiaryRequest = async (path = "", init?: RequestInit) => {
+    const session = await restoreSession();
+    if (!session)
+      throw new Error("Your session has expired. Please sign in again.");
+    const apiUrl = process.env.NEXT_PUBLIC_MONEYFLOW_API_URL;
+    if (!apiUrl)
+      throw new Error("Customer API is not configured for this environment.");
+    const response = await fetch(
+      `${apiUrl.replace(/\/$/, "")}/api/v1/beneficiaries${path}`,
+      {
+        ...init,
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+          "Content-Type": "application/json",
+          "X-MoneyFlow-Environment": environment,
+          ...(init?.headers || {}),
+        },
+      },
+    );
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as {
+        detail?: string;
+        message?: string;
+        error?: string;
+      };
+      throw new Error(
+        payload.detail ||
+          payload.message ||
+          payload.error ||
+          `Beneficiary request failed (${response.status}).`,
+      );
+    }
+    if (response.status === 204) return null;
+    return response.json();
+  };
+
+  const refreshBeneficiaries = async () => {
+    const records = (await beneficiaryRequest()) as Array<{
+      id: string;
+      displayName: string;
+      provider: CustomerBeneficiary["provider"];
+      accountMasked: string;
+      status: "active" | "cooldown";
+    }>;
+    setBeneficiaries(
+      records.map((record) => ({
+        id: record.id,
+        name: record.displayName,
+        provider: record.provider,
+        accountMasked: record.accountMasked,
+        accountReal: "",
+        status: record.status === "active" ? "Active" : "Cooldown",
+        cooldownNote:
+          record.status === "cooldown"
+            ? "Available after the 24-hour security hold"
+            : undefined,
+      })),
+    );
+  };
+
+  useEffect(() => {
+    if (!isLoggedIn || activeNav !== "beneficiaries") return;
+    // Refresh the server-backed collection when its page becomes active.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void refreshBeneficiaries().catch((error) =>
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Beneficiaries could not be loaded.",
+      ),
+    );
+  }, [activeNav, environment, isLoggedIn]);
+
+  const requestEnvironment = (next: CustomerEnvironment) => {
+    if (next === "live" && !liveEligible) {
+      setActiveNav("live-activation");
+      return;
+    }
+    setEnvironment(next);
+    window.localStorage.setItem("moneyflow-environment", next);
+    setActiveNav("dashboard");
+  };
 
   const signIn = async (email: string, password: string) => {
     const session = await signInWithPassword(email, password);
@@ -349,6 +477,8 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
         },
         environment,
         setEnvironment,
+        requestEnvironment,
+        liveEligible,
         showOnboarding,
         setShowOnboarding,
         onboardingOrigin,
@@ -364,13 +494,38 @@ export const CustomerProvider: React.FC<{ children: React.ReactNode }> = ({
         sessions,
         buyXaf: () => unavailable("Remittance creation"),
         withdrawXaf: () => unavailable("Withdrawals"),
-        addBeneficiary: () => unavailable("Beneficiary management"),
-        removeBeneficiary: () => unavailable("Beneficiary management"),
+        addBeneficiary: async (name, provider, account) => {
+          await beneficiaryRequest("", {
+            method: "POST",
+            body: JSON.stringify({
+              displayName: name,
+              provider,
+              accountReference: account,
+            }),
+          });
+          await refreshBeneficiaries();
+        },
+        removeBeneficiary: async (id) => {
+          await beneficiaryRequest(`/${id}`, { method: "DELETE" });
+          setBeneficiaries((current) =>
+            current.filter((beneficiary) => beneficiary.id !== id),
+          );
+        },
         uploadDocument: () => unavailable("Document upload"),
         markAllNotificationsRead: () => unavailable("Notifications"),
         terminateSession: () => unavailable("Session management"),
         terminateAllOtherSessions: () => unavailable("Session management"),
         toggleMfa: () => unavailable("MFA changes"),
+        beginMfaEnrollment: beginTotpEnrollment,
+        verifyMfaEnrollment: async (factorId, code) => {
+          await verifyTotpEnrollment(factorId, code);
+          setUser((current) => ({ ...current, mfaEnabled: true }));
+        },
+        beginPhoneVerification,
+        verifyPhoneVerification: async (phone, code) => {
+          await verifyPhoneChange(phone, code);
+          setUser((current) => ({ ...current, phone, phoneVerified: true }));
+        },
         updateProfile,
       }}
     >

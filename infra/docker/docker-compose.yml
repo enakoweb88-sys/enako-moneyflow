@@ -8,7 +8,7 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d moneyflow"]
       interval: 5s
@@ -32,6 +32,20 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_PROFILES_ACTIVE: local
+      MTN_MOMO_ENABLED: ${MTN_MOMO_ENABLED:-false}
+      MTN_MOMO_BASE_URL: ${MTN_MOMO_BASE_URL:-https://momoapi.momo.africa}
+      MTN_MOMO_TARGET_ENVIRONMENT: ${MTN_MOMO_TARGET_ENVIRONMENT:-mtncameroon}
+      MTN_MOMO_CALLBACK_URL: ${MTN_MOMO_CALLBACK_URL:-}
+      PRIMARY_KEY: ${PRIMARY_KEY:-}
+      SECONDARY_KEY: ${SECONDARY_KEY:-}
+      DEPOSIT_API_USER: ${DEPOSIT_API_USER:-}
+      DEPOSIT_API_KEY: ${DEPOSIT_API_KEY:-}
+      PIX_PAY_ENABLED: ${PIX_PAY_ENABLED:-false}
+      PIX_PAY_BASE_URL: ${PIX_PAY_BASE_URL:-}
+      PIX_PAY_CALLBACK_URL: ${PIX_PAY_CALLBACK_URL:-}
+      PIX_PAY_API_KEY: ${PIX_PAY_API_KEY:-}
+      PIX_PAY_ORANGE_CM_CASHIN_SERVICE_ID: ${PIX_PAY_ORANGE_CM_CASHIN_SERVICE_ID:-}
+      PIX_PAY_ORANGE_CM_CASHOUT_SERVICE_ID: ${PIX_PAY_ORANGE_CM_CASHOUT_SERVICE_ID:-}
     ports:
       - "8080:8080"
 

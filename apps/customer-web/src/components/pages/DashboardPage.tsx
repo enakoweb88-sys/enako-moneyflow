@@ -1,28 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Image from "next/image";
 import { ArrowRight, Check } from "lucide-react";
 import { useCustomer } from "@/mock/CustomerContext";
-import { IllustrationReel } from "@/components/common/IllustrationReel";
-
-const companionMessages = [
-  "A strong account starts with verified details.",
-  "Small, consistent savings can build real momentum.",
-  "I’ll keep your next important action easy to find.",
-  "Secure first. Move money confidently after.",
-];
 
 export const DashboardPage = () => {
   const { user, wallet, activities, setActiveNav, openOnboarding } =
     useCustomer();
   const firstName = user.name?.split(" ")[0] || "there";
-  const [messageIndex, setMessageIndex] = useState(0);
+  const [storyFrame, setStoryFrame] = useState(0);
 
   useEffect(() => {
     const timer = window.setInterval(
-      () =>
-        setMessageIndex((current) => (current + 1) % companionMessages.length),
-      4600,
+      () => setStoryFrame((current) => (current + 1) % 6),
+      10000,
     );
     return () => window.clearInterval(timer);
   }, []);
@@ -64,12 +56,9 @@ export const DashboardPage = () => {
           <h1 className="mt-5 max-w-2xl text-4xl font-bold leading-[1.06] tracking-[-.045em] sm:text-5xl">
             Welcome back, {firstName}. Your next move is ready.
           </h1>
-          <p
-            key={messageIndex}
-            className="dashboard-live-message mt-5 max-w-xl text-sm leading-6 text-[#6f625d]"
-            aria-live="polite"
-          >
-            {companionMessages[messageIndex]}
+          <p className="mt-5 max-w-xl text-sm leading-6 text-[#6f625d]">
+            Save, withdraw and move money with protection working quietly in the
+            background.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <button
@@ -86,17 +75,16 @@ export const DashboardPage = () => {
             </button>
           </div>
         </div>
-        <div className="relative min-h-[300px] bg-[#f9eee7] lg:min-h-full">
-          <div className="absolute inset-0 opacity-40 [background-image:radial-gradient(#edbbb8_1px,transparent_1px)] [background-size:22px_22px]" />
-          <IllustrationReel
-            source="/moneyflow-robot-reel.png"
-            frame={messageIndex}
-            label="MoneyFlow robot saving, investing and protecting your account"
-            className="dashboard-robot absolute inset-4 sm:inset-7"
+        <div className="relative min-h-[300px] overflow-hidden bg-[#f9eee7] p-7 lg:min-h-full lg:p-10">
+          <Image
+            key={storyFrame}
+            src={`/robot-story/frame-${storyFrame + 1}.png`}
+            alt="MoneyFlow robot saving and protecting a customer's money"
+            fill
+            priority
+            sizes="(min-width: 1024px) 40vw, 100vw"
+            className="robot-story-frame object-contain p-6 sm:p-8"
           />
-          <div className="absolute bottom-5 left-5 rounded-full bg-white/90 px-3 py-2 text-[10px] font-bold uppercase tracking-[.12em] text-[#c35359] shadow-sm backdrop-blur">
-            Live guidance
-          </div>
         </div>
       </section>
 

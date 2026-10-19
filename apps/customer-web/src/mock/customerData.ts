@@ -5,6 +5,7 @@ export interface CustomerUser {
   name: string;
   email: string;
   phone: string;
+  phoneVerified: boolean;
   kycStatus: "Verified" | "Pending" | "Not started" | "More info needed";
   kycTier: "Tier 1" | "Tier 2" | "Tier 3";
   mfaEnabled: boolean;
@@ -75,6 +76,7 @@ export const INITIAL_CUSTOMER_USER: CustomerUser = {
   name: "",
   email: "",
   phone: "",
+  phoneVerified: false,
   kycStatus: "Not started",
   kycTier: "Tier 1",
   mfaEnabled: false,

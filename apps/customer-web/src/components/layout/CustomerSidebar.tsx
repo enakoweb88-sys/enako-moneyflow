@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   MessageSquareWarning,
   CreditCard,
+  FlaskConical,
+  Rocket,
   Users,
   Wallet,
 } from "lucide-react";
@@ -20,7 +22,8 @@ import { useCustomer } from "@/mock/CustomerContext";
 import { CustomerAvatar } from "@/components/common/CustomerAvatar";
 
 export const CustomerSidebar: React.FC = () => {
-  const { activeNav, setActiveNav, notifications, user } = useCustomer();
+  const { activeNav, setActiveNav, notifications, user, environment } =
+    useCustomer();
   const [developerMenuOpen, setDeveloperMenuOpen] = useState(false);
   const developerMenuRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -42,6 +45,19 @@ export const CustomerSidebar: React.FC = () => {
       group: "Workspace",
     },
     {
+      id: "sandbox-lab",
+      label: "Sandbox lab",
+      icon: FlaskConical,
+      group: "Workspace",
+      environments: ["sandbox"],
+    },
+    {
+      id: "pilot-live",
+      label: "Pilot Live",
+      icon: Rocket,
+      group: "Workspace",
+    },
+    {
       id: "wallet",
       label: "Wallet & statements",
       icon: Wallet,
@@ -58,22 +74,25 @@ export const CustomerSidebar: React.FC = () => {
       label: "Send & withdraw",
       icon: Send,
       group: "Money movement",
+      environments: ["live"],
     },
     {
       id: "activate-payments",
       label: "Activate payments",
       icon: CreditCard,
       group: "Money movement",
+      environments: ["live"],
     },
     {
       id: "beneficiaries",
-      label: "Beneficiaries",
+      label: environment === "sandbox" ? "Test beneficiaries" : "Beneficiaries",
       icon: Users,
       group: "Money movement",
     },
     {
       id: "disputes",
-      label: "Transaction disputes",
+      label:
+        environment === "sandbox" ? "Test disputes" : "Transaction disputes",
       icon: MessageSquareWarning,
       group: "Money movement",
     },
@@ -98,7 +117,9 @@ export const CustomerSidebar: React.FC = () => {
       icon: Code2,
       group: "Developers",
     },
-  ];
+  ].filter(
+    (item) => !item.environments || item.environments.includes(environment),
+  );
   return (
     <aside className="relative hidden w-64 shrink-0 flex-col justify-between overflow-hidden border-r border-[#eadbd0] bg-[#fbf6f0] md:flex">
       <div className="pointer-events-none absolute -left-24 -top-28 h-64 w-64 rounded-full bg-[#efaaa0]/18 blur-3xl" />

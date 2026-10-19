@@ -1,550 +1,397 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { PageHeader } from "@/components/ui/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Tabs } from "@/components/ui/tabs";
+import React, { useEffect, useMemo, useState } from "react";
+import { Check, ChevronRight } from "lucide-react";
+import { toast } from "sonner";
 import { Modal } from "@/components/ui/modal";
 import { useCustomer } from "@/mock/CustomerContext";
 import { formatMoney } from "@/lib/format";
-import { toast } from "sonner";
-import {
-  ArrowUpRight,
-  Send,
-  CheckCircle2,
-  ShieldCheck,
-  Smartphone,
-  Users,
-  Zap,
-  Wallet,
-  ArrowRight,
-} from "lucide-react";
 
 export const SendWithdrawPage: React.FC = () => {
   const { wallet, beneficiaries, withdrawXaf, setActiveNav } = useCustomer();
-
-  const [activeTab, setActiveTab] = useState<"withdraw" | "send">("withdraw");
-
-  // Withdraw Form State
-  const [selectedBeneficiaryId, setSelectedBeneficiaryId] = useState(
-    beneficiaries[0]?.id || "",
+  const [mode, setMode] = useState<"withdraw" | "send">("withdraw");
+  const [beneficiaryId, setBeneficiaryId] = useState(
+    beneficiaries[0]?.id ?? "",
   );
-  const [withdrawAmount, setWithdrawAmount] = useState("250000");
+  const [amount, setAmount] = useState("");
+  const [recipient, setRecipient] = useState("");
+  const [confirming, setConfirming] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [completedReference, setCompletedReference] = useState("");
+  const selectedBeneficiary = beneficiaries.find(
+    (item) => item.id === beneficiaryId,
+  );
+  const numericAmount = Number(amount) || 0;
+  const fee = mode === "withdraw" ? Math.round(numericAmount * 0.01) : 0;
+  const total = numericAmount + fee;
+  const canContinue =
+    numericAmount > 0 &&
+    total <= wallet.available &&
+    (mode === "send"
+      ? recipient.trim().length > 3
+      : Boolean(selectedBeneficiary));
 
-  // Send Form State
-  const [targetWalletEmail, setTargetWalletEmail] = useState("");
-  const [sendAmount, setSendAmount] = useState("");
+  const quoteRows = useMemo(
+    () => [
+      [
+        mode === "withdraw" ? "Recipient receives" : "Transfer amount",
+        numericAmount,
+      ],
+      [mode === "withdraw" ? "Network fee · 1%" : "MoneyFlow fee", fee],
+      ["Total debit", total],
+    ],
+    [fee, mode, numericAmount, total],
+  );
 
-  // Flow State
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [isMfaOpen, setIsMfaOpen] = useState(false);
-  const [mfaDigits, setMfaDigits] = useState(["", "", "", "", "", ""]);
-
-  // In-place post-submission status screen state
-  const [submittedTx, setSubmittedTx] = useState<{
-    id: string;
-    beneficiaryName: string;
-    amount: number;
-    fee: number;
-    total: number;
-    status: "Processing" | "Completed" | "Failed";
-  } | null>(null);
-
-  const fee = 2500; // 1.0% aggregator fee
-  const numAmount = parseFloat(withdrawAmount) || 0;
-  const totalDebit = numAmount + fee;
-  const selectedBen =
-    beneficiaries.find((b) => b.id === selectedBeneficiaryId) ||
-    beneficiaries[0];
-
-  // In-place status update timer (Processing -> Completed without page refresh)
   useEffect(() => {
-    if (!submittedTx || submittedTx.status !== "Processing") return;
-    const timer = setTimeout(() => {
-      setSubmittedTx((prev) =>
-        prev ? { ...prev, status: "Completed" } : null,
+    if (!processing) return;
+    const timer = window.setTimeout(() => {
+      const reference = `${mode === "withdraw" ? "WTH" : "TRF"}-${Date.now().toString().slice(-8)}`;
+      withdrawXaf(
+        numericAmount,
+        fee,
+        mode === "withdraw"
+          ? selectedBeneficiary?.name || "Beneficiary"
+          : recipient,
       );
-      toast.success("Mobile Money Switch confirmed payout completion.");
-    }, 3500);
-    return () => clearInterval(timer);
-  }, [submittedTx]);
+      setCompletedReference(reference);
+      setProcessing(false);
+    }, 2600);
+    return () => window.clearTimeout(timer);
+  }, [
+    fee,
+    mode,
+    numericAmount,
+    processing,
+    recipient,
+    selectedBeneficiary?.name,
+    withdrawXaf,
+  ]);
 
-  const handleOpenConfirm = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (numAmount <= 0) {
-      toast.error("Please enter a valid disbursement amount.");
+  const beginReview = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!canContinue) {
+      toast.error(
+        mode === "withdraw" && !selectedBeneficiary
+          ? "Add a verified beneficiary before withdrawing."
+          : "Review the recipient, amount and available balance.",
+      );
       return;
     }
-    if (totalDebit > wallet.available) {
-      toast.error("Insufficient available balance in your XAF wallet.");
-      return;
-    }
-    setIsConfirming(true);
+    setConfirming(true);
   };
 
-  const handleConfirmSubmit = () => {
-    setIsConfirming(false);
-    setIsMfaOpen(true);
+  const dispatch = () => {
+    setConfirming(false);
+    setProcessing(true);
   };
 
-  const handleMfaVerifyAndDispatch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsMfaOpen(false);
-
-    withdrawXaf(numAmount, fee, selectedBen?.name || "Beneficiary");
-    setSubmittedTx({
-      id: `WTH-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-      beneficiaryName: selectedBen?.name || "Beneficiary",
-      amount: numAmount,
-      fee,
-      total: totalDebit,
-      status: "Processing",
-    });
-  };
-
-  const handleSendToWallet = (e: React.FormEvent) => {
-    e.preventDefault();
-    const amountNum = parseFloat(sendAmount) || 0;
-    if (!targetWalletEmail || amountNum <= 0) {
-      toast.error("Please specify recipient customer email and amount.");
-      return;
-    }
-    withdrawXaf(amountNum, 0, `E-NAKO Wallet: ${targetWalletEmail}`);
-    toast.success(
-      `Internal wallet transfer dispatched to ${targetWalletEmail}.`,
-    );
-    setSendAmount("");
-    setTargetWalletEmail("");
+  const reset = () => {
+    setAmount("");
+    setRecipient("");
+    setCompletedReference("");
   };
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
-      <PageHeader
-        title="Send & Withdraw"
-        subtitle="Disburse funds to registered mobile money wallets or send peer-to-peer between E-NAKO corporate accounts"
-      />
-
-      {/* Tabs */}
-      <Tabs
-        tabs={[
-          { id: "withdraw", label: "Withdraw to Mobile Money" },
-          { id: "send", label: "Peer-to-Peer E-NAKO Transfer" },
-        ]}
-        activeTab={activeTab}
-        onChange={(id) => setActiveTab(id as typeof activeTab)}
-      />
-
-      {/* Post-Submission Status Screen */}
-      {submittedTx ? (
-        <Card className="border-slate-200 bg-white shadow-md rounded-2xl overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
-          <CardHeader className="bg-slate-50/80 border-b border-slate-100 py-8 text-center">
-            <div className="w-12 h-12 rounded-full bg-[#00c2c7]/15 text-[#001f5b] flex items-center justify-center mx-auto mb-3">
-              {submittedTx.status === "Completed" ? (
-                <CheckCircle2 className="w-6 h-6 text-[#001f5b]" />
-              ) : (
-                <Zap className="w-6 h-6 text-[#001f5b] animate-pulse" />
-              )}
-            </div>
-            <div className="flex items-center justify-center mb-2">
-              <Badge
-                variant={
-                  submittedTx.status === "Completed" ? "success" : "warning"
-                }
-                className="font-mono text-xs uppercase"
-              >
-                {submittedTx.status === "Completed"
-                  ? "Settlement Confirmed"
-                  : "Routing to Aggregator"}
-              </Badge>
-            </div>
-            <CardTitle className="text-2xl font-extrabold text-slate-900">
-              {submittedTx.status === "Processing"
-                ? "Disbursement in Processing..."
-                : "Payout Completed Successfully"}
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-600 mt-1 max-w-md mx-auto">
-              {submittedTx.status === "Processing"
-                ? "Your payout request is being executed via the CEMAC mobile money switch. Verification in progress..."
-                : "Funds have been delivered and acknowledged by the recipient mobile network operator."}
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="p-8 space-y-6">
-            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 max-w-md mx-auto space-y-2.5 text-xs font-mono">
-              <div className="flex justify-between py-1.5 border-b border-slate-200">
-                <span className="text-slate-500 font-sans">Withdrawal Ref</span>
-                <span className="font-bold text-slate-900">
-                  {submittedTx.id}
-                </span>
-              </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-200">
-                <span className="text-slate-500 font-sans">Beneficiary</span>
-                <span className="font-semibold text-slate-900 font-sans">
-                  {submittedTx.beneficiaryName}
-                </span>
-              </div>
-              <div className="flex justify-between py-1.5 border-b border-slate-200">
-                <span className="text-slate-500 font-sans">Payout Amount</span>
-                <span className="font-bold text-slate-900">
-                  {formatMoney(submittedTx.amount, "XAF")}
-                </span>
-              </div>
-              <div className="flex justify-between py-1.5">
-                <span className="text-slate-500 font-sans font-bold">
-                  Total Debited
-                </span>
-                <span className="font-extrabold text-[#001f5b] text-sm">
-                  {formatMoney(submittedTx.total, "XAF")}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex justify-center space-x-3">
-              <Button
-                variant="outline"
-                size="default"
-                onClick={() => setSubmittedTx(null)}
-                className="rounded-xl"
-              >
-                New Withdrawal
-              </Button>
-              <Button
-                variant="default"
-                size="default"
-                onClick={() => setActiveNav("dashboard")}
-                className="bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs"
-              >
-                Back to Dashboard
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      ) : activeTab === "withdraw" ? (
-        /* WITHDRAW TAB FORM */
-        <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
-          <CardHeader className="border-b border-slate-100 pb-4 bg-slate-50/50">
-            <CardTitle className="text-base font-bold text-slate-900">
-              Instant Mobile Money Cashout
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500">
-              Direct API disbursement to MTN Mobile Money and Orange Money
-              Cameroun
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6 space-y-6">
-            <form
-              onSubmit={handleOpenConfirm}
-              className="space-y-5 text-xs font-sans"
+    <div className="mx-auto max-w-6xl space-y-7 pb-14">
+      <section className="relative overflow-hidden rounded-[32px] bg-[#171b29] px-7 py-9 text-white shadow-[0_24px_70px_rgba(23,27,41,.16)] sm:px-10 sm:py-11">
+        <div className="send-current" />
+        <div className="relative z-10 grid gap-9 lg:grid-cols-[1.25fr_.75fr] lg:items-end">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#f49a91]">
+              Money movement
+            </p>
+            <h1 className="mt-5 max-w-3xl text-4xl font-bold leading-[1.05] tracking-[-.045em] sm:text-5xl">
+              Send money with every detail under control.
+            </h1>
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/65">
+              Choose the destination, see the exact debit and review delivery
+              details before authorizing.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[.06] p-5 backdrop-blur-md">
+            <p className="text-[10px] font-bold uppercase tracking-[.12em] text-white/45">
+              Available balance
+            </p>
+            <p className="money-number mt-2 text-3xl font-bold">
+              {formatMoney(wallet.available, "XAF")}
+            </p>
+            <button
+              onClick={() => setActiveNav("buy-xaf")}
+              className="mt-5 w-full rounded-xl bg-[#ef766f] px-4 py-3 text-xs font-bold text-white transition hover:-translate-y-0.5 hover:bg-[#e36762] hover:shadow-lg"
             >
-              {/* Beneficiary Selector */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
-                    Select Verified Recipient
-                  </label>
+              Deposit money
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid rounded-2xl bg-[#f0f1f3] p-1.5 sm:grid-cols-2">
+        {[
+          ["withdraw", "Withdraw to mobile money"],
+          ["send", "Send to MoneyFlow wallet"],
+        ].map(([value, label]) => (
+          <button
+            key={value}
+            onClick={() => {
+              setMode(value as typeof mode);
+              reset();
+            }}
+            className={`rounded-xl px-4 py-3.5 text-sm font-bold transition ${mode === value ? "bg-white text-[#171b29] shadow-sm" : "text-slate-500 hover:text-[#171b29]"}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {completedReference ? (
+        <section className="grid min-h-[430px] place-items-center bg-[#edf7f5] p-8 text-center">
+          <div>
+            <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#316f69] text-white">
+              <Check size={25} />
+            </span>
+            <p className="mt-6 text-[11px] font-bold uppercase tracking-[.14em] text-[#4b7d78]">
+              Transfer confirmed
+            </p>
+            <h2 className="mt-3 text-3xl font-bold tracking-[-.04em] text-[#1f3735]">
+              Your money is on its way.
+            </h2>
+            <p className="money-number mt-4 text-sm font-bold text-[#5d7673]">
+              {completedReference}
+            </p>
+            <div className="mt-8 flex justify-center gap-3">
+              <button
+                onClick={reset}
+                className="rounded-xl bg-[#24413f] px-4 py-3 text-xs font-bold text-white"
+              >
+                Make another transfer
+              </button>
+              <button
+                onClick={() => setActiveNav("wallet")}
+                className="rounded-xl border border-[#b8cfcb] px-4 py-3 text-xs font-bold text-[#315a56]"
+              >
+                View statement
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : (
+        <section className="grid gap-6 lg:grid-cols-[1.15fr_.85fr]">
+          <form
+            onSubmit={beginReview}
+            className="space-y-8 rounded-[28px] border border-[#ebe2dd] bg-white p-6 shadow-[0_18px_55px_rgba(72,48,40,.06)] sm:p-9"
+          >
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#b15357]">
+                01 · Destination
+              </p>
+              {mode === "withdraw" ? (
+                beneficiaries.length ? (
+                  <select
+                    value={beneficiaryId}
+                    onChange={(event) => setBeneficiaryId(event.target.value)}
+                    className="mt-3 w-full rounded-xl border border-slate-200 bg-[#fcfaf8] px-4 py-4 text-sm font-bold outline-none focus:border-[#d76164]"
+                  >
+                    {beneficiaries.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.name} · {item.provider} · {item.accountMasked}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
                   <button
                     type="button"
                     onClick={() => setActiveNav("beneficiaries")}
-                    className="text-[#001f5b] hover:text-[#00c2c7] font-semibold cursor-pointer underline text-xs transition-colors"
+                    className="mt-3 flex w-full items-center justify-between rounded-xl border border-dashed border-[#ddbbb1] bg-[#fffaf7] px-4 py-5 text-left text-sm font-bold text-[#a54f53]"
                   >
-                    + Register new beneficiary
+                    Add your first verified beneficiary{" "}
+                    <ChevronRight size={17} />
                   </button>
-                </div>
-                <select
-                  value={selectedBeneficiaryId}
-                  onChange={(e) => setSelectedBeneficiaryId(e.target.value)}
-                  className="w-full h-11 px-3.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#001f5b]"
-                >
-                  {beneficiaries.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name} — {b.provider} ({b.accountMasked})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Amount Field */}
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
-                    Withdrawal Amount (XAF)
-                  </label>
-                  <span className="text-slate-500 font-mono text-xs">
-                    Available:{" "}
-                    <strong className="text-slate-900">
-                      {formatMoney(wallet.available, "XAF")}
-                    </strong>
-                  </span>
-                </div>
-                <Input
-                  type="number"
-                  placeholder="e.g. 250000"
-                  value={withdrawAmount}
-                  onChange={(e) => setWithdrawAmount(e.target.value)}
-                  className="w-full h-11 text-base font-bold font-mono border-slate-300 rounded-xl"
-                />
-              </div>
-
-              {/* Summary Calculation Panel */}
-              <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5 text-xs font-sans">
-                <span className="font-bold text-slate-900 uppercase tracking-wider block border-b border-slate-200 pb-2">
-                  Disbursement Fee Breakdown
-                </span>
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-slate-500 font-medium">
-                    Disbursed Payout to Mobile:
-                  </span>
-                  <span className="font-mono font-bold text-slate-900 text-sm">
-                    {formatMoney(numAmount, "XAF")}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-slate-500 font-medium">
-                    Aggregator Gateway Tariff (1.0%):
-                  </span>
-                  <span className="font-mono text-slate-700">
-                    {formatMoney(fee, "XAF")}
-                  </span>
-                </div>
-                <div className="flex justify-between items-baseline pt-3 border-t border-slate-200">
-                  <span className="font-bold text-slate-900 text-sm uppercase">
-                    Total Amount Debited:
-                  </span>
-                  <span className="font-mono font-extrabold text-[#001f5b] text-xl">
-                    {formatMoney(totalDebit, "XAF")}
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end">
-                <Button
-                  variant="default"
-                  size="default"
-                  type="submit"
-                  disabled={numAmount <= 0 || totalDebit > wallet.available}
-                  className="px-8 font-semibold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs"
-                >
-                  Review Authorization <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      ) : (
-        /* SEND TO ANOTHER E-NAKO WALLET */
-        <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
-          <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
-          <CardHeader className="border-b border-slate-100 pb-4 bg-slate-50/50">
-            <CardTitle className="text-base font-bold text-slate-900">
-              Peer-to-Peer Wallet Transfer
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500">
-              Instant zero-fee transfer to any verified E-NAKO customer or
-              merchant account
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-6">
-            <form
-              onSubmit={handleSendToWallet}
-              className="space-y-5 text-xs font-sans"
-            >
-              <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-2 text-xs">
-                  Recipient Customer Email / Corporate ID
-                </label>
-                <Input
-                  type="email"
-                  placeholder="e.g. corporate.treasury@cameroon-logistics.cm"
-                  value={targetWalletEmail}
-                  onChange={(e) => setTargetWalletEmail(e.target.value)}
-                  className="w-full h-11 text-xs font-sans border-slate-300 rounded-xl"
-                />
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
-                    Transfer Amount (XAF)
-                  </label>
-                  <span className="text-slate-500 font-mono text-xs">
-                    Available:{" "}
-                    <strong className="text-slate-900">
-                      {formatMoney(wallet.available, "XAF")}
-                    </strong>
-                  </span>
-                </div>
-                <Input
-                  type="number"
-                  placeholder="e.g. 50000"
-                  value={sendAmount}
-                  onChange={(e) => setSendAmount(e.target.value)}
-                  className="w-full h-11 text-base font-bold font-mono border-slate-300 rounded-xl"
-                />
-              </div>
-
-              <div className="p-4 bg-[#001f5b]/5 rounded-2xl border border-[#001f5b]/15 text-xs flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-[#001f5b] text-white flex items-center justify-center shrink-0">
-                  <Zap className="w-4 h-4 text-[#00c2c7]" />
-                </div>
-                <div>
-                  <span className="font-bold text-[#001f5b] block">
-                    Instant Settlement • Zero Fee
-                  </span>
-                  <span className="text-slate-600">
-                    Internal peer-to-peer ledger updates settle immediately with
-                    0 XAF fees.
-                  </span>
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end">
-                <Button
-                  variant="default"
-                  size="default"
-                  type="submit"
-                  className="px-8 font-semibold bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs"
-                >
-                  Send Funds <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Confirmation Step Before Submission Modal */}
-      {isConfirming && (
-        <Modal
-          isOpen={isConfirming}
-          onClose={() => setIsConfirming(false)}
-          title="Confirm Withdrawal Authorization"
-          subtitle="Please inspect recipient coordinates and total debit before dispatching."
-          maxWidth="md"
-        >
-          <div className="space-y-4 text-xs font-sans">
-            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-200 space-y-2.5">
-              <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500">Recipient Beneficiary:</span>
-                <span className="font-bold text-slate-900">
-                  {selectedBen?.name}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500">Provider Switch:</span>
-                <span className="font-medium text-slate-800">
-                  {selectedBen?.provider}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500">Disbursed Amount:</span>
-                <span className="font-mono font-bold text-slate-900">
-                  {formatMoney(numAmount, "XAF")}
-                </span>
-              </div>
-              <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500">Gateway Fee:</span>
-                <span className="font-mono text-slate-700">
-                  {formatMoney(fee, "XAF")}
-                </span>
-              </div>
-              <div className="flex justify-between py-1.5 pt-2">
-                <span className="font-bold text-slate-900 uppercase">
-                  Total Debited:
-                </span>
-                <span className="font-mono font-extrabold text-[#001f5b] text-base">
-                  {formatMoney(totalDebit, "XAF")}
-                </span>
-              </div>
-            </div>
-
-            <div className="pt-2 flex items-center justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setIsConfirming(false)}
-                className="text-xs text-slate-500 hover:text-slate-800 font-medium px-3 py-1 cursor-pointer"
-              >
-                Cancel
-              </button>
-              <Button
-                variant="default"
-                size="default"
-                onClick={handleConfirmSubmit}
-                className="bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs"
-              >
-                Confirm Payout
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-      {/* MFA Security Screen Modal for Withdrawal */}
-      {isMfaOpen && (
-        <Modal
-          isOpen={isMfaOpen}
-          onClose={() => setIsMfaOpen(false)}
-          title="Security Step: Enter MFA Code"
-          subtitle="Confirm this disbursement with your 6-digit authorization code."
-          maxWidth="sm"
-        >
-          <form
-            onSubmit={handleMfaVerifyAndDispatch}
-            className="space-y-5 text-xs text-center font-sans"
-          >
-            <div className="flex justify-between gap-1">
-              {mfaDigits.map((d, i) => (
+                )
+              ) : (
                 <input
-                  key={i}
-                  type="text"
-                  maxLength={1}
-                  value={d}
-                  onChange={(e) => {
-                    const clean = e.target.value.slice(-1);
-                    const n = [...mfaDigits];
-                    n[i] = clean;
-                    setMfaDigits(n);
-                  }}
-                  className="w-10 h-12 text-center text-lg font-bold font-mono border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#001f5b] focus:outline-none"
+                  value={recipient}
+                  onChange={(event) => setRecipient(event.target.value)}
+                  placeholder="Recipient email or MoneyFlow ID"
+                  className="mt-3 w-full rounded-xl border border-slate-200 bg-[#fcfaf8] px-4 py-4 text-sm font-bold outline-none placeholder:font-medium placeholder:text-slate-300 focus:border-[#d76164]"
                 />
+              )}
+            </div>
+            <div>
+              <div className="flex items-end justify-between">
+                <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#b15357]">
+                  02 · Amount
+                </p>
+                <p className="money-number text-xs text-slate-500">
+                  Available {formatMoney(wallet.available, "XAF")}
+                </p>
+              </div>
+              <div className="mt-3 flex items-baseline rounded-2xl border border-slate-200 bg-[#fcfaf8] px-5 focus-within:border-[#d76164]">
+                <input
+                  type="number"
+                  min="0"
+                  value={amount}
+                  onChange={(event) => setAmount(event.target.value)}
+                  placeholder="0"
+                  className="money-number min-w-0 flex-1 bg-transparent py-5 text-5xl font-bold tracking-[-.05em] outline-none placeholder:text-slate-200"
+                />
+                <span className="text-sm font-bold text-slate-400">XAF</span>
+              </div>
+              <div className="mt-4 flex gap-2">
+                {[25000, 50000, 100000].map((value) => (
+                  <button
+                    type="button"
+                    key={value}
+                    onClick={() => setAmount(String(value))}
+                    className="rounded-full bg-[#f7f1ed] px-3 py-2 text-[11px] font-bold text-[#765e57]"
+                  >
+                    + {value.toLocaleString()}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={!canContinue}
+              className="w-full rounded-xl bg-[#d76164] px-5 py-4 text-sm font-bold text-white transition hover:bg-[#c65357] disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              Review and authorize
+            </button>
+          </form>
+
+          <aside className="rounded-[28px] bg-[#f7f4f1] p-7 sm:p-8 lg:sticky lg:top-6 lg:self-start">
+            <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#b15357]">
+              Live quote
+            </p>
+            <h2 className="mt-3 text-2xl font-bold tracking-[-.035em] text-[#28211f]">
+              Everything before you approve.
+            </h2>
+            <div className="mt-7 border-t border-[#e2cec5]">
+              {quoteRows.map(([label, value], index) => (
+                <div
+                  key={label as string}
+                  className={`flex items-center justify-between border-b border-[#e8d8d0] py-4 ${index === 2 ? "font-bold" : ""}`}
+                >
+                  <span className="text-xs text-[#79655e]">
+                    {label as string}
+                  </span>
+                  <span className="money-number text-sm text-[#2b2421]">
+                    {formatMoney(value as number, "XAF")}
+                  </span>
+                </div>
               ))}
             </div>
-
-            <p className="text-slate-500 text-xs">
-              Dispatched to verified device ending in ••82.
-            </p>
-
-            <div className="pt-2 flex justify-end space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                type="button"
-                onClick={() => setIsMfaOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                type="submit"
-                className="bg-[#001f5b] hover:bg-[#00153f] text-white"
-              >
-                Authorize Payout
-              </Button>
+            <div className="mt-7 space-y-4 text-xs leading-5 text-[#74635d]">
+              <p>
+                <strong className="text-[#3e3430]">Estimated arrival</strong>
+                <br />
+                {mode === "withdraw"
+                  ? "Usually within minutes after network acceptance."
+                  : "Immediate after recipient validation."}
+              </p>
+              <p>
+                <strong className="text-[#3e3430]">Security</strong>
+                <br />
+                Recipient and balance are checked again at authorization.
+              </p>
+              <p>
+                <strong className="text-[#3e3430]">Reference</strong>
+                <br />A traceable ledger reference is created after
+                confirmation.
+              </p>
             </div>
-          </form>
-        </Modal>
+          </aside>
+        </section>
       )}
+
+      {!completedReference ? (
+        <section className="grid gap-4 border-y border-slate-200 py-6 text-xs text-slate-500 sm:grid-cols-3">
+          <p>
+            <strong className="block text-slate-800">
+              Protected authorization
+            </strong>
+            <span className="mt-1 block leading-5">
+              Balance and destination are rechecked before dispatch.
+            </span>
+          </p>
+          <p>
+            <strong className="block text-slate-800">
+              Transparent pricing
+            </strong>
+            <span className="mt-1 block leading-5">
+              The final debit is visible before confirmation.
+            </span>
+          </p>
+          <p>
+            <strong className="block text-slate-800">Traceable delivery</strong>
+            <span className="mt-1 block leading-5">
+              Every completed instruction receives a ledger reference.
+            </span>
+          </p>
+        </section>
+      ) : null}
+
+      {processing ? (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-[#171b29]/80 backdrop-blur">
+          <div className="text-center text-white">
+            <div className="send-processing mx-auto h-20 w-20 rounded-full border border-white/20" />
+            <p className="mt-6 text-xl font-bold">Securing your transfer…</p>
+            <p className="mt-2 text-xs text-white/55">
+              Checking recipient, balance and payout route
+            </p>
+          </div>
+        </div>
+      ) : null}
+
+      <Modal
+        isOpen={confirming}
+        onClose={() => setConfirming(false)}
+        title="Review transfer"
+        subtitle="Confirm the final destination and total debit."
+        maxWidth="md"
+      >
+        <div className="space-y-5">
+          <div className="border-y border-slate-200">
+            {[
+              [
+                "Destination",
+                mode === "withdraw"
+                  ? selectedBeneficiary?.name || ""
+                  : recipient,
+              ],
+              ...quoteRows,
+            ].map(([label, value]) => (
+              <div
+                key={label as string}
+                className="flex justify-between gap-5 border-b border-slate-100 py-4 last:border-0"
+              >
+                <span className="text-xs text-slate-500">
+                  {label as string}
+                </span>
+                <strong className="money-number text-right text-sm text-slate-800">
+                  {typeof value === "number"
+                    ? formatMoney(value, "XAF")
+                    : value}
+                </strong>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-end gap-3">
+            <button
+              onClick={() => setConfirming(false)}
+              className="px-3 py-2 text-xs font-bold text-slate-500"
+            >
+              Go back
+            </button>
+            <button
+              onClick={dispatch}
+              className="rounded-xl bg-[#d76164] px-5 py-3 text-xs font-bold text-white"
+            >
+              Confirm transfer
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

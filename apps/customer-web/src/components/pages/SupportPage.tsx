@@ -2,215 +2,243 @@
 
 import React, { useState } from "react";
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "../ui/card";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { PageHeader } from "../ui/page-header";
-import { toast } from "sonner";
-import {
-  HelpCircle,
-  MessageSquare,
-  Send,
   ChevronDown,
-  ChevronUp,
-  Mail,
-  Phone,
-  Shield,
+  ChevronRight,
+  LifeBuoy,
+  MessageCircle,
+  Paperclip,
+  ShieldAlert,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useCustomer } from "@/mock/CustomerContext";
 
-interface FaqItem {
-  id: string;
-  question: string;
-  answer: string;
-}
-
-const FAQS: FaqItem[] = [
-  {
-    id: "faq_1",
-    question: "How long does a Buy XAF remittance take to credit my wallet?",
-    answer:
-      "Bank transfers initiated via SEPA, Faster Payments, or ACH typically settle within 15 to 45 minutes after you upload your proof of transfer. Once verified by our treasury team, your XAF wallet balance updates automatically.",
-  },
-  {
-    id: "faq_2",
-    question: "What are the daily withdrawal limits to MTN and Orange Money?",
-    answer:
-      "For Verified (Level 2) accounts, the maximum single transaction limit is 5 000 000 XAF, with a rolling daily limit of 10 000 000 XAF. Contact institutional support if your organization requires higher treasury thresholds.",
-  },
-  {
-    id: "faq_3",
-    question: "Why does a newly added beneficiary have a 24-hour cooldown?",
-    answer:
-      "To safeguard your funds against unauthorized access, newly added disbursement accounts require a mandatory 24-hour verification hold before disbursements can be initiated to them.",
-  },
-  {
-    id: "faq_4",
-    question: "What documents are accepted for KYC identity verification?",
-    answer:
-      "We accept valid international passports, CEMAC national ID cards, and official residence permits. Proof of address must be a utility bill or bank statement dated within the past 90 days.",
-  },
-  {
-    id: "faq_5",
-    question: "Are there any hidden exchange rate markups or fees?",
-    answer:
-      "No. E-NAKO uses competitive wholesale interbank FX rates. All conversion fees (typically 0.75% for EUR to XAF) and mobile network disbursement tariffs are itemized transparently before you confirm any transaction.",
-  },
+const guides = [
+  [
+    "Funding and settlement",
+    "Understand deposits, processing and wallet availability.",
+  ],
+  [
+    "Sending and withdrawing",
+    "Review beneficiaries, delivery windows and transaction status.",
+  ],
+  [
+    "Identity and account access",
+    "Get help with verification, security and recovery.",
+  ],
+];
+const faqs = [
+  [
+    "When will a deposit appear?",
+    "A deposit appears after the payment route confirms settlement. Its status will be visible in Wallet & statements.",
+  ],
+  [
+    "Why is a beneficiary unavailable?",
+    "A beneficiary may require verification or a security review before it can receive funds.",
+  ],
+  [
+    "Which identity documents can I use?",
+    "The verification flow will show the documents accepted for your country and account level.",
+  ],
 ];
 
 export const SupportPage: React.FC = () => {
-  const [openFaqId, setOpenFaqId] = useState<string | null>(FAQS[0].id);
+  const { setActiveNav } = useCustomer();
+  const [open, setOpen] = useState(0);
+  const [category, setCategory] = useState("Account and profile");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSupportSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!subject.trim() || !message.trim()) {
-      toast.error("Please enter both a subject and your message.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      toast.success(
-        "Your support request has been logged. Ticket #SUP-88214 created.",
-      );
-      setSubject("");
-      setMessage("");
-    }, 500);
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!subject.trim() || !message.trim())
+      return toast.error("Add a subject and a short description.");
+    toast.info(
+      "Support submission will be available when the live support service is connected.",
+    );
   };
-
-  const toggleFaq = (id: string) => {
-    setOpenFaqId((prev) => (prev === id ? null : id));
-  };
-
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Support & Treasury Advisory"
-        subtitle="Need assistance with an FX wire or automated clearing settlement? Our team is available 24/7"
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Contact Form */}
-        <div className="lg:col-span-5">
-          <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
-            <CardHeader className="border-b border-slate-100 pb-4 bg-slate-50/50">
-              <CardTitle className="text-base font-bold text-slate-900">
-                Send an Inquiry
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500">
-                Submit an inquiry directly to the E-NAKO operations and clearing
-                desk
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <form onSubmit={handleSupportSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                    Subject / Reference
-                  </label>
-                  <Input
-                    type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="e.g. Deposit confirmation for wire ENK-REM-89211"
-                    required
-                    className="w-full text-xs border-slate-300 rounded-xl h-10"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                    Message Details
-                  </label>
-                  <textarea
-                    rows={5}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Detail your question, beneficiary account, or remittance reference number..."
-                    className="w-full text-xs bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#001f5b] transition-all"
-                    required
-                  />
-                </div>
-
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-600">
-                  ⚡ <strong>Response SLA:</strong> Institutional clearing desk
-                  tickets are prioritized within 15 minutes.
-                </div>
-
-                <Button
-                  type="submit"
-                  variant="default"
-                  className="w-full bg-[#001f5b] hover:bg-[#00153f] text-white rounded-xl shadow-xs font-semibold"
-                  disabled={isSubmitting}
+    <div className="mx-auto max-w-6xl space-y-8 pb-16">
+      <section className="grid overflow-hidden border-y border-slate-200 lg:grid-cols-[1fr_280px]">
+        <div className="py-9 pr-6 sm:py-12">
+          <p className="text-[11px] font-bold uppercase tracking-[.16em] text-[#bd5d59]">
+            MoneyFlow support
+          </p>
+          <h1 className="mt-4 text-4xl font-bold tracking-[-.045em] text-[#171b29] sm:text-5xl">
+            Answers without the runaround.
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-500">
+            Find the right path, describe what happened and keep sensitive
+            financial details inside the secure account.
+          </p>
+        </div>
+        <div className="flex items-end bg-[#ef766f] p-7 text-white">
+          <div>
+            <MessageCircle size={28} />
+            <p className="mt-8 text-xs font-bold uppercase tracking-[.14em] text-white/70">
+              Support workspace
+            </p>
+            <p className="mt-2 text-lg font-bold">
+              Guidance, requests and account safety in one place.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section className="grid gap-5 sm:grid-cols-3">
+        {guides.map(([title, copy], index) => (
+          <article key={title} className="border-t border-slate-200 py-6">
+            <span className="money-number text-xs font-bold text-[#ef766f]">
+              0{index + 1}
+            </span>
+            <h2 className="mt-5 text-lg font-bold text-[#171b29]">{title}</h2>
+            <p className="mt-2 text-xs leading-5 text-slate-500">{copy}</p>
+            <button
+              onClick={() =>
+                index === 0
+                  ? setActiveNav("wallet")
+                  : index === 1
+                    ? setActiveNav("send-withdraw")
+                    : setActiveNav("profile-kyc")
+              }
+              className="mt-5 flex items-center gap-1 text-xs font-bold text-[#171b29]"
+            >
+              Open related area <ChevronRight size={14} />
+            </button>
+          </article>
+        ))}
+      </section>
+      <section className="grid gap-8 lg:grid-cols-[1fr_1fr]">
+        <form
+          onSubmit={submit}
+          className="rounded-[28px] bg-[#f7f4f1] p-7 sm:p-8"
+        >
+          <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#bd5d59]">
+            Contact support
+          </p>
+          <h2 className="mt-3 text-2xl font-bold tracking-[-.035em] text-[#171b29]">
+            Tell us what you need.
+          </h2>
+          <div className="mt-7 space-y-4">
+            <label className="block text-xs font-bold text-slate-600">
+              Category
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 outline-none"
+              >
+                <option>Account and profile</option>
+                <option>Deposit or withdrawal</option>
+                <option>Verification</option>
+                <option>Security concern</option>
+                <option>Technical issue</option>
+              </select>
+            </label>
+            <label className="block text-xs font-bold text-slate-600">
+              Subject
+              <input
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="A short summary"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3.5 outline-none focus:border-[#ef766f]"
+              />
+            </label>
+            <label className="block text-xs font-bold text-slate-600">
+              What happened?
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={5}
+                placeholder="Include useful dates or references. Never share your password or verification code."
+                className="mt-2 w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3.5 outline-none focus:border-[#ef766f]"
+              />
+            </label>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <button
+                type="button"
+                onClick={() =>
+                  toast.info(
+                    "Attachments will be enabled with the live support service.",
+                  )
+                }
+                className="flex items-center gap-2 text-xs font-bold text-slate-500"
+              >
+                <Paperclip size={15} />
+                Attach evidence
+              </button>
+              <button className="rounded-xl bg-[#ef766f] px-6 py-3.5 text-xs font-bold text-white">
+                Prepare support request
+              </button>
+            </div>
+          </div>
+        </form>
+        <div>
+          <p className="text-[11px] font-bold uppercase tracking-[.14em] text-[#bd5d59]">
+            Quick answers
+          </p>
+          <h2 className="mt-3 text-2xl font-bold tracking-[-.035em] text-[#171b29]">
+            Before you contact us.
+          </h2>
+          <div className="mt-6 border-t border-slate-200">
+            {faqs.map(([question, answer], index) => (
+              <div key={question} className="border-b border-slate-200">
+                <button
+                  onClick={() => setOpen(open === index ? -1 : index)}
+                  className="flex w-full items-center justify-between py-5 text-left text-sm font-bold text-[#171b29]"
                 >
-                  {isSubmitting ? "Dispatching..." : "Submit Support Ticket"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* FAQs list */}
-        <div className="lg:col-span-7">
-          <Card className="border-slate-200 shadow-sm rounded-2xl overflow-hidden">
-            <div className="h-1 bg-gradient-to-r from-[#001f5b] via-[#00c2c7] to-[#D4AF37]" />
-            <CardHeader className="border-b border-slate-100 pb-4 bg-slate-50/50">
-              <CardTitle className="text-base font-bold text-slate-900">
-                Frequently Asked Questions
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500">
-                Official guidance regarding FX clearing, daily disbursement
-                limits, and settlement windows
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                {FAQS.map((faq) => {
-                  const isOpen = openFaqId === faq.id;
-                  return (
-                    <div
-                      key={faq.id}
-                      className="border border-slate-200 rounded-xl overflow-hidden"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => toggleFaq(faq.id)}
-                        className={`w-full text-left p-4 flex items-center justify-between transition-colors ${
-                          isOpen
-                            ? "bg-[#001f5b]/5 text-[#001f5b] font-bold"
-                            : "text-slate-800 hover:bg-slate-50 font-semibold"
-                        }`}
-                      >
-                        <span className="text-xs">{faq.question}</span>
-                        {isOpen ? (
-                          <ChevronUp className="w-4 h-4 text-[#001f5b] shrink-0" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
-                        )}
-                      </button>
-
-                      {isOpen && (
-                        <div className="p-4 pt-2 text-xs leading-relaxed text-slate-600 bg-white border-t border-slate-100">
-                          {faq.answer}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                  {question}
+                  <ChevronDown
+                    size={17}
+                    className={`transition ${open === index ? "rotate-180" : ""}`}
+                  />
+                </button>
+                {open === index && (
+                  <p className="pb-5 pr-8 text-xs leading-6 text-slate-500">
+                    {answer}
+                  </p>
+                )}
               </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
+          <div className="mt-7 grid gap-3 sm:grid-cols-2">
+            <button
+              onClick={() => setActiveNav("disputes")}
+              className="flex items-center gap-3 rounded-2xl bg-[#171b29] p-5 text-left text-white"
+            >
+              <ShieldAlert className="text-[#ef766f]" />
+              <span>
+                <strong className="block text-sm">Report a transaction</strong>
+                <small className="text-white/45">Open disputes</small>
+              </span>
+            </button>
+            <div className="flex items-center gap-3 rounded-2xl bg-[#edf7f5] p-5">
+              <MessageCircle className="text-[#39756d]" />
+              <span>
+                <strong className="block text-sm text-[#171b29]">
+                  Case history
+                </strong>
+                <small className="text-slate-500">No connected cases yet</small>
+              </span>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
+      <section className="flex flex-col gap-4 border-y border-slate-200 py-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <LifeBuoy className="text-[#ef766f]" />
+          <div>
+            <strong className="text-sm text-[#171b29]">
+              Urgent account security concern?
+            </strong>
+            <p className="mt-1 text-xs text-slate-500">
+              Secure your account first, then prepare a support request.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => setActiveNav("security")}
+          className="text-xs font-bold text-[#bd5d59]"
+        >
+          Open security centre
+        </button>
+      </section>
     </div>
   );
 };

@@ -8,3 +8,7 @@ spring:
     password: ${DB_PASSWORD:postgres}
   jpa:
     show-sql: true
+
+app:
+  security:
+    data-encryption-secret: ${APP_DATA_ENCRYPTION_SECRET:moneyflow-local-development-encryption-key}

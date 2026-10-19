@@ -24,9 +24,17 @@ import { CustomerDevelopersPage } from "@/components/pages/CustomerDevelopersPag
 import { CustomerAnalyticsPage } from "@/components/pages/CustomerAnalyticsPage";
 import { DisputesPage } from "@/components/pages/DisputesPage";
 import { PaymentActivationPage } from "@/components/pages/PaymentActivationPage";
+import { LiveActivationPage } from "@/components/pages/LiveActivationPage";
+import { OperationalApprovalPage } from "@/components/pages/OperationalApprovalPage";
+import { ResetPasswordPage } from "@/components/pages/ResetPasswordPage";
+import { SandboxLabPage } from "@/components/pages/SandboxLabPage";
+import { SandboxDashboardPage } from "@/components/pages/SandboxDashboardPage";
+import { SandboxDeveloperPage } from "@/components/pages/SandboxDeveloperPage";
+import { PilotLivePage } from "@/components/pages/PilotLivePage";
 
 export default function Home() {
-  const { isLoggedIn, authLoading, activeNav, setActiveNav } = useCustomer();
+  const { isLoggedIn, authLoading, activeNav, setActiveNav, environment } =
+    useCustomer();
 
   if (authLoading)
     return (
@@ -57,7 +65,9 @@ export default function Home() {
     }
 
     if (activeNav.startsWith("dev-") || activeNav === "developers") {
-      return (
+      return environment === "sandbox" ? (
+        <SandboxDeveloperPage />
+      ) : (
         <CustomerDevelopersPage key={activeNav} initialSubPage={activeNav} />
       );
     }
@@ -65,7 +75,11 @@ export default function Home() {
     // Authenticated application pages
     switch (activeNav) {
       case "buy-xaf":
-        return <BuyXafPage />;
+        return environment === "sandbox" ? <SandboxLabPage /> : <BuyXafPage />;
+      case "sandbox-lab":
+        return <SandboxLabPage />;
+      case "pilot-live":
+        return <PilotLivePage />;
       case "wallet":
         return <WalletPage />;
       case "analytics":
@@ -74,12 +88,24 @@ export default function Home() {
         return <SendWithdrawPage />;
       case "activate-payments":
         return <PaymentActivationPage />;
+      case "live-activation":
+        return <LiveActivationPage />;
       case "beneficiaries":
         return <BeneficiariesPage />;
       case "profile-kyc":
         return <ProfileKycPage />;
+      case "profile-verification":
+        return <ProfileKycPage initialTab="verification" />;
       case "security":
         return <SecurityPage />;
+      case "security-mfa":
+        return <SecurityPage focusMfa />;
+      case "security-phone":
+        return <SecurityPage focusRecovery />;
+      case "operational-approval":
+        return <OperationalApprovalPage />;
+      case "reset-password":
+        return <ResetPasswordPage />;
       case "notifications":
         return <NotificationsPage />;
       case "support":
@@ -88,7 +114,11 @@ export default function Home() {
         return <DisputesPage />;
       case "dashboard":
       default:
-        return <DashboardPage />;
+        return environment === "sandbox" ? (
+          <SandboxDashboardPage />
+        ) : (
+          <DashboardPage />
+        );
     }
   };
 
@@ -117,16 +147,28 @@ export default function Home() {
   // Logged-in customer portal layout: Top bar + Sidebar + Main content
   const mobileNavTabs = [
     { id: "dashboard", label: "Dashboard" },
+    { id: "sandbox-lab", label: "Sandbox lab" },
+    { id: "pilot-live", label: "Pilot Live" },
     { id: "wallet", label: "Wallet" },
     { id: "analytics", label: "Analytics" },
-    { id: "send-withdraw", label: "Send & Withdraw" },
-    { id: "activate-payments", label: "Activate payments" },
-    { id: "beneficiaries", label: "Beneficiaries" },
+    ...(environment === "live"
+      ? [{ id: "send-withdraw", label: "Send & Withdraw" }]
+      : []),
+    ...(environment === "live"
+      ? [{ id: "activate-payments", label: "Activate payments" }]
+      : []),
+    {
+      id: "beneficiaries",
+      label: environment === "sandbox" ? "Test beneficiaries" : "Beneficiaries",
+    },
     { id: "profile-kyc", label: "KYC" },
     { id: "security", label: "Security" },
     { id: "notifications", label: "Notices" },
     { id: "support", label: "Support" },
-    { id: "disputes", label: "Disputes" },
+    {
+      id: "disputes",
+      label: environment === "sandbox" ? "Test disputes" : "Disputes",
+    },
     { id: "developers", label: "API" },
   ];
 

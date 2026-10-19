@@ -29,6 +29,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/actuator/health/**", "/api/v1/health").permitAll()
+                .requestMatchers("/api/v1/sandbox-api/**").permitAll()
+                .requestMatchers("/api/v1/payments/**").permitAll()
+                .requestMatchers("/api/v1/provider-callbacks/**").permitAll()
                 .anyRequest().authenticated()
             );
 
@@ -50,7 +53,7 @@ public class SecurityConfig {
             .filter(origin -> !origin.isBlank())
             .toList());
         configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Idempotency-Key", "X-Request-ID"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Idempotency-Key", "X-Request-ID", "X-MoneyFlow-Environment", "X-MoneyFlow-Key"));
         configuration.setExposedHeaders(List.of("X-Request-ID"));
         configuration.setAllowCredentials(false);
         configuration.setMaxAge(3600L);
