@@ -243,6 +243,11 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Turbo Build
         run: pnpm run build
+        env:
+          # Public, non-production placeholders let Next.js validate its build
+          # without exposing or depending on staging credentials.
+          NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+          NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:

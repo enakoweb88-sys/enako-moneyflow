@@ -42,7 +42,7 @@ The Sandbox never contacts MTN or Orange and never moves real money. It is used 
 ```bash
 curl -X POST "https://staging.moneyflow.enako.cm/api/v1/sandbox-api/payments" \
   -H "Content-Type: application/json" \
-  -H "X-MoneyFlow-Key: mf_sbx_REPLACE_ME" \
+  -H "$MONEYFLOW_KEY_HEADER" \
   -H "Idempotency-Key: shop-order-1001" \
   -d '{
     "amountMinor": 25,
@@ -50,6 +50,8 @@ curl -X POST "https://staging.moneyflow.enako.cm/api/v1/sandbox-api/payments" \
     "customerReference": "ORDER-1001"
   }'
 ```
+
+Set `MONEYFLOW_KEY_HEADER` in your terminal to an `X-MoneyFlow-Key` header containing the Sandbox key shown once in the developer portal. Keep the key outside source control.
 
 `amountMinor` is an integer number of XAF. Because XAF has no fractional minor unit, `25` means 25 XAF. The current accepted range is 1 to 100,000,000 XAF.
 
@@ -76,7 +78,7 @@ Example response:
 
 ```bash
 curl "https://staging.moneyflow.enako.cm/api/v1/sandbox-api/payments/30719885-84cb-41df-a021-ff2d24b8d6e2" \
-  -H "X-MoneyFlow-Key: mf_sbx_REPLACE_ME"
+  -H "$MONEYFLOW_KEY_HEADER"
 ```
 
 ### Idempotency
